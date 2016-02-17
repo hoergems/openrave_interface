@@ -3,6 +3,7 @@
 #include <openrave-core.h>
 #include <openrave/environment.h>
 #include <boost/make_shared.hpp>
+#include <Eigen/Dense>
 #include "SensorDataBase.hpp"
 
 namespace shared {
@@ -21,6 +22,16 @@ class SensorManager {
 	     */
 	    bool setEnvironment(OpenRAVE::EnvironmentBasePtr &env);
 	    
+	    /**
+	     * Transforms the origin of a sensor
+	     */
+	    void transformSensor(std::string &name, Eigen::MatrixXd &transform);
+	    
+	    /**
+	     * Turn of a sensor
+	     */
+	    void disableSensor(std::string &name);
+	    
     private:	    
 	    /**
 	     * The main sensor loop
@@ -31,7 +42,9 @@ class SensorManager {
 	     * The external sensors
 	     */   
 	    //std::map<unsigned int, std::pair<OpenRAVE:SensorBase::SensorType, std::string>> mymap;	   
-	    std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr> > sensor_map_;
+	    std::map<std::string, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr> > sensor_map_;
+	    
+	    std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr> > latest_sensor_readings_;
 	    
 	    OpenRAVE::EnvironmentBasePtr env_;
 	    

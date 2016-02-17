@@ -7,6 +7,7 @@
 #include "urdf_loader.hpp"
 #include "viewer.hpp"
 #include "sensor_manager.hpp"
+#include "robot.hpp"
 #include <map>
 #include <tuple>
 
@@ -35,6 +36,16 @@ class Environment {
 	     * Shows the viewer
 	     */
 	    bool showViewer(); 
+	    
+	    /**
+	     * Returns the sensor manager
+	     */
+	    std::shared_ptr<SensorManager> getSensorManager();
+	    
+	    /**
+	     * Gets the robot
+	     */
+	    std::shared_ptr<shared::Robot> getRobot();
 	
     private:
 	    /**
@@ -66,6 +77,11 @@ class Environment {
 	     * Parses URDF files
 	     */
 	    std::shared_ptr<shared::URDFLoader> urdf_loader_;
+	    
+	    /**
+	     * The robot
+	     */
+	    std::shared_ptr<shared::Robot> robot_;
 	
 };
 

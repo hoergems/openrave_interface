@@ -7,7 +7,8 @@ namespace shared {
 
 SensorManager::SensorManager():
 	env_(nullptr),
-	sensor_map_(){
+	sensor_map_(),
+	latest_sensor_readings_(){
 	
 }
 
@@ -15,7 +16,7 @@ void SensorManager::sensor_loop_() {
 	OpenRAVE::SensorBase::SensorDataPtr sensor_data;
 	
 	// Turn on the sensors
-	for(std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
+	for(std::map<std::string, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
 			sensor_map_.begin(); iter != sensor_map_.end(); ++iter) {
 		OpenRAVE::SensorBasePtr s = iter->second.second;
 		s->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, true);
@@ -24,15 +25,22 @@ void SensorManager::sensor_loop_() {
 		    
 	while (true) {
 		std::vector<boost::shared_ptr<SensorDataBase>> last_sensor_readings;
-		for(std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
+		std::vector<boost::shared_ptr<SensorDataBase>> camera_sensor_readings;
+		for(std::map<std::string, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
 				sensor_map_.begin(); iter != sensor_map_.end(); ++iter) {
 			OpenRAVE::SensorBasePtr s = iter->second.second;
 			sensor_data = s->CreateSensorData(iter->second.first);
 			s->GetSensorData(sensor_data);
 			boost::shared_ptr<SensorDataBase> sensor_data_ptr;
 			if (iter->second.first == OpenRAVE::SensorBase::SensorType::ST_Laser) {
+				cout << "got lazrrrr!!!" << endl;
 				sensor_data_ptr = boost::make_shared<SensorData<OpenRAVE::SensorBase::LaserSensorData>>(sensor_data);
 				last_sensor_readings.push_back(sensor_data_ptr);
+			}
+			else if (iter->second.first == OpenRAVE::SensorBase::SensorType::ST_Camera) {				
+				sensor_data_ptr = boost::make_shared<SensorData<OpenRAVE::SensorBase::CameraSensorData>>(sensor_data);
+				last_sensor_readings.push_back(sensor_data_ptr);
+				boost::static_pointer_cast<SensorData<OpenRAVE::SensorBase::CameraSensorData>>(sensor_data_ptr)->getSensorData()->vimagedata[0];
 			}
 			//shared::SensorData<OpenRAVE::SensorBase::LaserSensorData> d(sensor_data);
 			
@@ -40,7 +48,7 @@ void SensorManager::sensor_loop_() {
 			boost::shared_ptr<OpenRAVE::SensorBase::LaserSensorData> laser_sensor_data = 
 					boost::static_pointer_cast<OpenRAVE::SensorBase::LaserSensorData>(sensor_data);
 			
-			sleep(2);
+			sleep(1);
 			/**for (size_t i = 0; i < laser_sensor_data->intensity.size(); i++) {
 				if (laser_sensor_data->intensity[i] > 0) {
 					cout << "INTENSE!!!" << endl;
@@ -50,6 +58,20 @@ void SensorManager::sensor_loop_() {
 			usleep(0.02 * 1e6);
 		}
 	}
+}
+
+void SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transform) {
+	Eigen::Matrix3d mat;
+	mat << transform(0, 0), transform(0, 1), transform(0, 2),
+		   transform(1, 0), transform(1, 1), transform(1, 2),
+		   transform(2, 0), transform(2, 1), transform(2, 2);
+	Eigen::Quaternion<double> quat(mat);
+	OpenRAVE::geometry::RaveVector<double> rot(quat.x(), quat.y(), quat.z(), quat.w());
+	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3), 
+				                                 transform(1, 3),
+											     transform(2, 3));
+	const OpenRAVE::Transform sensor_trans(rot, trans);
+	sensor_map_[name].second->SetTransform(sensor_trans);
 }
 
 bool SensorManager::setEnvironment(OpenRAVE::EnvironmentBasePtr &env) {
@@ -72,12 +94,13 @@ bool SensorManager::loadSensorsFromXML(std::vector<std::string> &sensor_files) {
 		OpenRAVE::InterfaceBasePtr sensor_interface = env_->ReadInterfaceXMLFile(sensor_files[i]);
 		env_->Add(sensor_interface);
 		OpenRAVE::SensorBasePtr sensor_ptr = boost::static_pointer_cast<OpenRAVE::SensorBase>(sensor_interface);
+		const std::string sensor_name = sensor_ptr->GetName();
 		if (sensor_ptr->Supports(OpenRAVE::SensorBase::SensorType::ST_Laser)) {
-			sensor_map_[i] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Laser,
+			sensor_map_[sensor_name] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Laser,
 					                        sensor_ptr);
 		}
 		else if (sensor_ptr->Supports(OpenRAVE::SensorBase::SensorType::ST_Camera)) {
-			sensor_map_[i] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Camera,
+			sensor_map_[sensor_name] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Camera,
 								            sensor_ptr);
 		}
 	}

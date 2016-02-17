@@ -52,6 +52,27 @@ if(PKG_CONFIG_FOUND)
     link_directories(${OPENRAVE_LIBRARY_DIRS})    
 endif()
 
+############################# LOAD FCL #############################
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(FCL fcl)
+    if(NOT FCL_FOUND)
+       message(FATAL_ERROR "FCL could not be found")
+    endif()
+    include_directories(${FCL_INCLUDE_DIRS})
+    link_directories(${FCL_LIBRARY_DIRS})     
+endif()
+
+############################# LOAD RBDL_INTERFACE #############################
+if(PKG_CONFIG_FOUND)    
+    pkg_check_modules(RBDL rbdl_interface)
+    if(NOT RBDL_FOUND)
+       message(FATAL_ERROR "RBDL could not be found")
+    endif()
+    include_directories(${RBDL_INCLUDE_DIRS})
+    link_directories(${RBDL_LIBRARY_DIRS})  
+    message("RBDL include: ${RBDL_INCLUDE_DIRS}")   
+endif()
+
 ############################# LOAD EIGEN #############################
 if(PKG_CONFIG_FOUND)
     pkg_check_modules(EIGEN eigen3)
@@ -69,13 +90,19 @@ add_library(openrave_interface SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor_manager.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/urdf_loader.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/viewer.cpp)
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/viewer.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/robot.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/Kinematics.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/propagator.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/integrate.cpp)
 
 target_link_libraries (openrave_interface
                        ${URDF_LIBRARIES}
                        ${Boost_LIBRARIES}
                        ${PYTHON_LIBRARIES}
-                       ${OPENRAVE_LIBRARIES})
+                       ${OPENRAVE_LIBRARIES}
+                       ${FCL_LIBRARIES}
+                       ${RBDL_LIBRARIES})
 
 
 set(pkg_conf_file_in "${CMAKE_CURRENT_SOURCE_DIR}/openrave_interface.pc.in")
