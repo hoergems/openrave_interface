@@ -6,6 +6,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include "urdf_loader.hpp"
 #include "viewer.hpp"
+#include "sensor_manager.hpp"
 #include <map>
 #include <tuple>
 
@@ -42,6 +43,11 @@ class Environment {
 	    void sensor_loop_();
 	    
 	    /**
+	     * The sensor manager
+	     */
+	    std::shared_ptr<SensorManager> sensor_manager_;
+	    
+	    /**
 	     * Determines of the environment has been set up
 	     */
 	    bool environment_setup_;
@@ -60,12 +66,6 @@ class Environment {
 	     * Parses URDF files
 	     */
 	    std::shared_ptr<shared::URDFLoader> urdf_loader_;
-	    
-	    /**
-	     * The external sensors
-	     */   
-	    //std::map<unsigned int, std::pair<OpenRAVE:SensorBase::SensorType, std::string>> mymap;	   
-	    std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr> > sensor_map_;
 	
 };
 

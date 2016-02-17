@@ -9,41 +9,11 @@ namespace shared {
 Environment::Environment():
     environment_setup_(false),
 	env_(nullptr),
+	sensor_manager_(new shared::SensorManager()),
 	viewer_(new shared::RaveViewer()),
-	urdf_loader_(),
-	sensor_map_()
+	urdf_loader_()
 {
 	
-}
-
-void Environment::sensor_loop_() {
-	OpenRAVE::SensorBase::SensorDataPtr sensor_data;
-	
-	// Turn on the sensors
-	for(std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
-			sensor_map_.begin(); iter != sensor_map_.end(); ++iter) {
-		OpenRAVE::SensorBasePtr s = iter->second.second;
-		s->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, true);
-		s->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, true);
-	}
-		    
-	while (true) {
-		for(std::map<unsigned int, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr>>::iterator iter = 
-				sensor_map_.begin(); iter != sensor_map_.end(); ++iter) {
-			OpenRAVE::SensorBasePtr s = iter->second.second;
-			sensor_data = s->CreateSensorData(iter->second.first);
-			s->GetSensorData(sensor_data);
-			boost::shared_ptr<OpenRAVE::SensorBase::LaserSensorData> laser_sensor_data = 
-					boost::static_pointer_cast<OpenRAVE::SensorBase::LaserSensorData>(sensor_data);
-			for (size_t i = 0; i < laser_sensor_data->intensity.size(); i++) {
-				if (laser_sensor_data->intensity[i] > 0) {
-					cout << "INTENSE!!!" << endl;
-				}
-			}
-			
-			usleep(0.02 * 1e6);
-		}
-	}
 }
 
 bool Environment::setupEnvironment(std::string environment_file) {
@@ -60,7 +30,12 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	cout << "loaded environment" << endl;
 	environment_setup_ = true;
 	//loadSensorsFromXML(sensor_files);
+	sensor_manager_->setEnvironment(env_);
 	return environment_setup_;
+}
+
+bool Environment::loadSensorsFromXML(std::vector<std::string> &sensor_files) {
+	return sensor_manager_->loadSensorsFromXML(sensor_files);
 }
 
 bool Environment::showViewer() {
@@ -73,30 +48,7 @@ bool Environment::showViewer() {
 	return true;	
 }
 
-bool Environment::loadSensorsFromXML(std::vector<std::string> &sensor_files) {
-	if (!environment_setup_) {
-		cout << "Error: Can't load sensors. Setup your environment first" << endl;
-		return false;
-	}
-	
-	for (unsigned int i = 0; i < sensor_files.size(); i++) {		
-		OpenRAVE::InterfaceBasePtr sensor_interface = env_->ReadInterfaceXMLFile(sensor_files[i]);
-		env_->Add(sensor_interface);
-		OpenRAVE::SensorBasePtr sensor_ptr = boost::static_pointer_cast<OpenRAVE::SensorBase>(sensor_interface);
-		if (sensor_ptr->Supports(OpenRAVE::SensorBase::SensorType::ST_Laser)) {
-			sensor_map_[i] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Laser,
-					                        sensor_ptr);
-		}
-		else if (sensor_ptr->Supports(OpenRAVE::SensorBase::SensorType::ST_Camera)) {
-			sensor_map_[i] = std::make_pair(OpenRAVE::SensorBase::SensorType::ST_Camera,
-								            sensor_ptr);
-		}
-	}
-	
-	boost::thread sensor_thread(boost::bind(&Environment::sensor_loop_, this));	
-	return true;
-	
-}
+
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
 	if (!environment_setup_) {
