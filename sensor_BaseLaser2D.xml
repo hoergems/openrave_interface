@@ -1,0 +1,11 @@
+<sensor name="mysensor" type="BaseLaser2D">
+    <translation>0 1 5</translation>
+    <rotationaxis>1 0 0 45</rotationaxis>
+    <min_angle>-135</min_angle>
+    <max_angle>135</max_angle>
+    <resolution>0.35</resolution>
+    <min_range>0.01</min_range>
+    <max_range>5</max_range>
+    <time_scan>0.002</time_scan>
+    <color>0.5 0.5 1</color>
+</sensor>
