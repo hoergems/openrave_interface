@@ -46,12 +46,29 @@ class Environment {
 	     * Gets the robot
 	     */
 	    std::shared_ptr<shared::Robot> getRobot();
+	    
+	    /**
+	     * Update the robot values in the viewer
+	     */
+	    void updateRobotValues(const std::vector<double> &current_joint_values,
+	    		   	   		   const std::vector<double> &current_joint_velocities,	
+	    					   const std::vector<std::vector<double>> &particle_joint_values,
+	    					   const std::vector<std::vector<double>> &particle_colors,
+	    		   	   		   OpenRAVE::RobotBasePtr robot);
+	    
+	    /**
+	     * Plot permanent particles
+	     */
+	    void plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
+	    		                    const std::vector<std::vector<double>> &particle_colors);
+	    
+	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
 	
     private:
 	    /**
-	     * The sensor loop
+	     * Gets the OpenRAVE robot from the environment
 	     */
-	    void sensor_loop_();
+	    OpenRAVE::RobotBasePtr getRaveRobot();
 	    
 	    /**
 	     * The sensor manager
@@ -82,6 +99,16 @@ class Environment {
 	     * The robot
 	     */
 	    std::shared_ptr<shared::Robot> robot_;
+	    
+	    /**
+	     * The robot model file
+	     */
+	    std::string robot_model_file_;
+	    
+	    /**
+	     * The maximum number of particles to plot
+	     */
+	    unsigned int particle_plot_limit_;
 	
 };
 

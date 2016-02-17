@@ -60,18 +60,43 @@ void SensorManager::sensor_loop_() {
 	}
 }
 
-void SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transform) {
+bool SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transform) {
+	if (sensor_map_.find(name) == sensor_map_.end()) {
+		cout << "SensorManager: Error: sensor " << name << " doesn't exist" << endl;
+		return false;
+	}
+	//Eigen::MatrixXd rot1(4, 4);
+	//Eigen::MatrixXd trans1(4, 4);
+	double angle = M_PI;
+	/**rot1 << cos(angle), -sin(angle), 0.0, 0.0,
+			sin(angle), cos(angle), 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0;*/
+	/**rot1 << cos(angle), 0.0, sin(angle), 0.0,
+			0.0, 1.0, 0.0, 0.0,
+			-sin(angle), 0.0, cos(angle), 0.0,
+			0.0, 0.0, 0.0, 1.0;*/
+	/**trans1 << 1.0, 0.0, 0.0, 1.0,
+			  0.0, 1.0, 0.0, 0.0,
+			  0.0, 0.0, 1.0, 0.0,
+			  0.0, 0.0, 0.0, 1.0;*/
+	/**rot1 << 1.0, 0.0, 0.0, 1.0,
+				0.0, 1.0, 0.0, 0.0,
+				0.0, 0.0, 1.0, 0.0,
+				0.0, 0.0, 0.0, 1.0;*/
+    //transform = transform * trans1;
 	Eigen::Matrix3d mat;
 	mat << transform(0, 0), transform(0, 1), transform(0, 2),
 		   transform(1, 0), transform(1, 1), transform(1, 2),
 		   transform(2, 0), transform(2, 1), transform(2, 2);
 	Eigen::Quaternion<double> quat(mat);
 	OpenRAVE::geometry::RaveVector<double> rot(quat.x(), quat.y(), quat.z(), quat.w());
-	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3), 
+	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3) + 0.01, 
 				                                 transform(1, 3),
 											     transform(2, 3));
 	const OpenRAVE::Transform sensor_trans(rot, trans);
 	sensor_map_[name].second->SetTransform(sensor_trans);
+	return true;
 }
 
 bool SensorManager::setEnvironment(OpenRAVE::EnvironmentBasePtr &env) {

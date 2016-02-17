@@ -1,0 +1,14 @@
+<sensor name="Spinning2DLaser" type="BaseSpinningLaser2D">
+    <translation>0 0 0</translation>
+    <rotationaxis>-1 0 0 0</rotationaxis>
+    <min_angle>-90</min_angle>
+    <max_angle>90</max_angle>
+    <resolution>0.35</resolution>
+    <max_range>10</max_range>
+    <min_range>0.01</min_range>
+    <time_scan>0.01</time_scan>
+    <spinaxis>1 0 0</spinaxis>
+    <spinpos>0 0 0</spinpos>
+    <spinspeed>2.0</spinspeed>
+    <color>0.4 1 0.4</color>
+</sensor>

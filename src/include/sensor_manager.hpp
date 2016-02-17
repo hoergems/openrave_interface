@@ -25,7 +25,7 @@ class SensorManager {
 	    /**
 	     * Transforms the origin of a sensor
 	     */
-	    void transformSensor(std::string &name, Eigen::MatrixXd &transform);
+	    bool transformSensor(std::string &name, Eigen::MatrixXd &transform);
 	    
 	    /**
 	     * Turn of a sensor

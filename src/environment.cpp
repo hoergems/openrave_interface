@@ -25,7 +25,9 @@ Environment::Environment():
 	sensor_manager_(new shared::SensorManager()),
 	viewer_(new shared::RaveViewer()),
 	urdf_loader_(),
-	robot_(nullptr)
+	robot_(nullptr),
+	robot_model_file_(),
+	particle_plot_limit_(50)
 {
 	
 }
@@ -70,6 +72,11 @@ std::shared_ptr<shared::Robot> Environment::getRobot() {
 	return robot_;
 }
 
+void Environment::transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name) {
+	Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
+	sensor_manager_->transformSensor(name, end_effector_transform);
+}
+
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
 	if (!environment_setup_) {
@@ -80,7 +87,148 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_file, env_);
 	env_->Add(robot_ptr, true);	
 	robot_ = std::make_shared<shared::Robot>(robot_file);
+	robot_model_file_ = robot_file;
 	return true;
+}
+
+void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
+		                                 const std::vector<std::vector<double>> &particle_colors) {	
+	double num_plot = particle_joint_values.size();
+	for (size_t i = 0; i < num_plot; i++) {
+	    OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_model_file_, env_);
+		std::string name = "permanent_robot_";
+		name.append(std::to_string(i));
+		robot_ptr->SetName(name);
+	    env_->Add(robot_ptr, true);
+	    std::vector<OpenRAVE::dReal> joint_vals;
+	    for (auto &k: particle_joint_values[i]) {
+	        joint_vals.push_back(k);
+	    }
+	        
+	    joint_vals.push_back(0);
+	        
+	    robot_ptr->SetDOFValues(joint_vals);
+	        
+	    const std::vector<OpenRAVE::KinBody::LinkPtr> links = robot_ptr->GetLinks();
+	    for (auto &link: links) {
+	        const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> link_geometries = link->GetGeometries();
+	        for (auto &geometry: link_geometries) {
+	            if (geometry->IsVisible()) {
+	        	    OpenRAVE::Vector color(particle_colors[i][0], 
+	        					           particle_colors[i][1], 
+										   particle_colors[i][2], 
+										   particle_colors[i][3]);
+	        		geometry->SetDiffuseColor(color);
+					geometry->SetAmbientColor(color);
+	        		geometry->SetTransparency(0.75);
+	        	}
+	        }
+	    }
+	}	
+}
+
+void Environment::updateRobotValues(const std::vector<double> &current_joint_values,
+		                            const std::vector<double> &current_joint_velocities,
+								    const std::vector<std::vector<double>> &particle_joint_values,
+									const std::vector<std::vector<double>> &particle_colors,
+								    OpenRAVE::RobotBasePtr robot=nullptr) {	
+	OpenRAVE::RobotBasePtr robot_to_use(nullptr);
+	
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	std::string particle_string = "particle";
+		
+	// Remove the particle bodies from the scene	
+	for (auto &body: bodies) {		
+		if (body->GetName().find(particle_string) != std::string::npos) {			
+			env_->Remove(body);
+		}		
+	}
+			
+	if (robot == nullptr) {
+		robot_to_use = getRaveRobot();
+	}
+	else {
+		robot_to_use = robot;
+	}
+	if (robot_to_use == nullptr) {
+		cout << "Propagator: Error: Environment or robot has not been initialized or passed as argument. Can't propagate the state" << endl;
+		return;	
+	}
+	
+	std::vector<OpenRAVE::KinBody::LinkPtr> links = robot_to_use->GetLinks();
+	std::vector<OpenRAVE::KinBody::JointPtr> joints = robot_to_use->GetJoints();	
+	std::vector<OpenRAVE::KinBody::LinkInfo> link_infos;
+	std::vector<OpenRAVE::KinBody::JointInfo> joint_infos;	
+	for (auto &link: links) {
+		link_infos.push_back(link->GetInfo());
+	}
+	
+	for (auto &joint: joints) {
+		joint_infos.push_back(joint->GetInfo());
+	}
+	
+	std::vector<OpenRAVE::dReal> newJointValues;
+	for (size_t i = 0; i < current_joint_values.size(); i++) {		
+		if (current_joint_values[i] < -M_PI) {
+			newJointValues.push_back(2.0 * M_PI + current_joint_values[i]);
+		}
+		else if (current_joint_values[i] > M_PI) {
+			newJointValues.push_back(-2.0 * M_PI + current_joint_values[i]);
+		}
+		else {
+			newJointValues.push_back(current_joint_values[i]);
+		}
+	}	
+		
+	newJointValues.push_back(0);	
+	robot_to_use->SetDOFValues(newJointValues);
+	size_t num_plot = particle_plot_limit_;	
+	if (particle_joint_values.size() < num_plot) {
+		num_plot = particle_joint_values.size();
+	}
+	
+	// Here we plot non-permanent particles
+	for (size_t i = 0; i < num_plot; i++) {
+		OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_model_file_, env_);
+		std::string name = "particle_robot_";
+		name.append(std::to_string(i));
+		robot_ptr->SetName(name);
+        env_->Add(robot_ptr, true);
+        std::vector<OpenRAVE::dReal> joint_vals;
+        for (auto &k: particle_joint_values[i]) {
+        	joint_vals.push_back(k);
+        }
+        
+        joint_vals.push_back(0);        
+        robot_ptr->SetDOFValues(joint_vals);        
+        const std::vector<OpenRAVE::KinBody::LinkPtr> links = robot_ptr->GetLinks();
+        for (auto &link: links) {
+        	const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> link_geometries = link->GetGeometries();
+        	for (auto &geometry: link_geometries) {
+        		if (geometry->IsVisible()) {
+        			OpenRAVE::Vector color(particle_colors[i][0], 
+        					               particle_colors[i][1], 
+										   particle_colors[i][2], 
+										   particle_colors[i][3]);
+        			geometry->SetDiffuseColor(color);
+					geometry->SetAmbientColor(color);
+        			geometry->SetTransparency(particle_colors[i][3]);
+        		}
+        	}
+        }
+	}
+}
+
+OpenRAVE::RobotBasePtr Environment::getRaveRobot() {
+    std::vector<OpenRAVE::KinBodyPtr> bodies;
+    env_->GetBodies(bodies);
+    for (auto &body: bodies) {
+    	if (body->GetDOF() > 0) {
+    		OpenRAVE::RobotBasePtr robot = boost::static_pointer_cast<OpenRAVE::RobotBase>(body);
+    		return robot;
+    	}    	
+    }   
 }
 
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
@@ -156,6 +304,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("getSensorManager", &Environment::getSensorManager)
 		.def("loadRobotFromURDF", &Environment::loadRobotFromURDF)
 		.def("getRobot", &Environment::getRobot)
+		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
+		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)
 	;
 	
 }

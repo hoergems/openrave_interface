@@ -559,6 +559,19 @@ void Robot::getEndEffectorPosition(const std::vector<double> &joint_angles, std:
 	kinematics_->getEndEffectorPosition(joint_angles, end_effector_position);
 }
 
+MatrixXd Robot::getEndEffectorTransform(const std::vector<double> &joint_angles) {
+	Eigen::MatrixXd res = Eigen::MatrixXd::Identity(4, 4);
+	res(0, 3) = joint_origins_[0][0];
+	res(1, 3) = joint_origins_[0][1];
+	res(2, 3) = joint_origins_[0][2];
+	for (size_t i = 0; i < joint_angles.size(); i++) {	
+		res = kinematics_->getPoseOfLinkN(joint_angles[i], res, i);
+	}
+	size_t n = joint_angles.size();
+	res = kinematics_->getPoseOfLinkN(0.0, res, n);
+	return res;
+}
+
 
 /****************************************
  * Viewer functions

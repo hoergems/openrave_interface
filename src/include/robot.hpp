@@ -181,6 +181,8 @@ struct Joint {
     	    std::vector<double> getProcessMatrices(std::vector<double> &x, 
                                                    std::vector<double> &rho, 
 				                                   double t_e);
+    	    
+    	    MatrixXd getEndEffectorTransform(const std::vector<double> &joint_angles);
 #ifdef USE_URDF	    
     	    /**
     	     * Set the size of the attached viewer
