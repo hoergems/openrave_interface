@@ -27,7 +27,8 @@ Environment::Environment():
 	urdf_loader_(),
 	robot_(nullptr),
 	robot_model_file_(),
-	particle_plot_limit_(50)
+	particle_plot_limit_(50),
+	octree_(nullptr)
 {
 	
 }
@@ -104,6 +105,10 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	robot_ = std::make_shared<shared::Robot>(robot_file);
 	robot_model_file_ = robot_file;
 	return true;
+}
+
+void Environment::initOctree() {
+	octree_ = std::make_shared<fcl::OcTree>(0.02);
 }
 
 void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
@@ -319,6 +324,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)
 		.def("triangulateScene", &Environment::triangulateScene)
 		.def("updateRobotValues", &Environment::updateRobotValues)
+		.def("initOctree", &Environment::initOctree)
 	;
 	
 }

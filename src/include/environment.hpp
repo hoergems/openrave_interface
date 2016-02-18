@@ -10,6 +10,7 @@
 #include "robot.hpp"
 #include <map>
 #include <tuple>
+#include <fcl/octree.h>
 
 namespace shared {
 
@@ -70,6 +71,11 @@ class Environment {
 	     * Triangulate the scene
 	     */
 	    void triangulateScene();
+	    
+	    /**
+	     * Initializes the Octree
+	     */
+	    void initOctree();
 	
     private:
 	    /**
@@ -116,6 +122,8 @@ class Environment {
 	     * The maximum number of particles to plot
 	     */
 	    unsigned int particle_plot_limit_;
+	    
+	    std::shared_ptr<fcl::OcTree> octree_;
 	
 };
 
