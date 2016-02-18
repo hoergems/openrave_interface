@@ -11,6 +11,7 @@
 #include <map>
 #include <tuple>
 #include <fcl/octree.h>
+#include <fcl/config.h>
 
 namespace shared {
 
@@ -81,7 +82,7 @@ class Environment {
 	    /**
 	     * Gets the OpenRAVE robot from the environment
 	     */
-	    OpenRAVE::RobotBasePtr getRaveRobot();
+	    OpenRAVE::RobotBasePtr getRaveRobot();	    
 	    
 	    /**
 	     * The sensor manager
@@ -123,7 +124,9 @@ class Environment {
 	     */
 	    unsigned int particle_plot_limit_;
 	    
-	    std::shared_ptr<fcl::OcTree> octree_;
+	    boost::shared_ptr<octomap::OcTree const> octree_;
+	    
+	    boost::shared_ptr<fcl::CollisionGeometry> tree_ptr_;
 	
 };
 

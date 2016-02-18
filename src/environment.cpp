@@ -28,7 +28,8 @@ Environment::Environment():
 	robot_(nullptr),
 	robot_model_file_(),
 	particle_plot_limit_(50),
-	octree_(nullptr)
+	octree_(nullptr),
+	tree_ptr_(nullptr)
 {
 	
 }
@@ -108,7 +109,12 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 }
 
 void Environment::initOctree() {
-	octree_ = std::make_shared<fcl::OcTree>(0.02);
+	// The FCL octree
+	octree_ = boost::make_shared<const octomap::OcTree>(0.1);
+	tree_ptr_ = boost::make_shared<fcl::OcTree>(octree_);
+	//boost::shared_ptr<CollisionGeometry> tree_ptr
+	//OcTree* tree = new OcTree(boost::shared_ptr<const octomap::OcTree>(generateOcTree()));
+	//boost::shared_ptr<CollisionGeometry> tree_ptr(tree);	
 }
 
 void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
