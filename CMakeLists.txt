@@ -59,7 +59,8 @@ if(PKG_CONFIG_FOUND)
        message(FATAL_ERROR "FCL could not be found")
     endif()
     include_directories(${FCL_INCLUDE_DIRS})
-    link_directories(${FCL_LIBRARY_DIRS})     
+    link_directories(${FCL_LIBRARY_DIRS}) 
+    message("FCL LIB DIRS ${FCL_LIBRARY_DIRS}")    
 endif()
 
 ############################# LOAD RBDL_INTERFACE #############################

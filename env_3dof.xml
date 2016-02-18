@@ -9,19 +9,7 @@
      </Geom>
    </Body>
   </KinBody-->
-  <!--AttachedSensor name="laser">
-      <link>Floor</link>
-      <translation>0.2 0 -0.1</translation>
-      <sensor type="BaseLaser2D">
-        <min_angle>-135</min_angle>
-        <max_angle>135</max_angle>
-        <resolution>0.35</resolution>
-        <min_range>0.01</min_range>
-        <max_range>5</max_range>
-        <time_scan>0.1</time_scan>
-        <color>0.5 0.5 1</color>
-      </sensor>
-    </AttachedSensor-->
+  
 
   <!--KinBody name="GoalArea">
     <Body type="static" name="GoalAreaBody" enable="true">
@@ -37,8 +25,8 @@
   <KinBody name="obst2">
     <Body type="dynamic" name="obst2_link" enable="true">
       <Geom type="box">
-        <Translation>5.0 0.0 0.0</Translation>
-        <extents>0.5 0.5 1.0</extents>
+        <Translation>20.0 0.0 0.0</Translation>
+        <extents>1.0 1.0 1.0</extents>
       </Geom>        
     </Body>
   </KinBody>

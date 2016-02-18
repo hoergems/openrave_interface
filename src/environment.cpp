@@ -265,8 +265,11 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		                    VecToList<std::shared_ptr<fcl::CollisionObject>> >();
 	
 	
-	class_<shared::SensorManager>("SensorManager");
-	class_<shared::Robot>("Robot", init<std::string>());
+	class_<shared::SensorManager, boost::noncopyable>("SensorManager")
+			.def("activateSensor", &shared::SensorManager::activateSensor)
+			.def("deactivateSensor", &shared::SensorManager::disableSensor)
+	;
+	//class_<shared::Robot>("Robot", init<std::string>());
 	register_ptr_to_python<std::shared_ptr<fcl::CollisionObject>>();
 	register_ptr_to_python<std::shared_ptr<shared::SensorManager>>();
 	register_ptr_to_python<std::shared_ptr<shared::Robot>>();
