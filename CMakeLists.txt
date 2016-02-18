@@ -1,12 +1,18 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (openrave_interface)
-set(CMAKE_BUILD_TYPE DEBUG)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11 -w")
+
+if (NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE DEBUG)
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11 -O3 -w")
 set(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++11 -O3 -w")
 SET(BOOST_MIN_VERSION "1.54.0")
 SET(PYTHON_MIN_VERSION "2.7.0")
+
 include(FindPkgConfig)
+include(GNUInstallDirs)
 
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
 
@@ -60,7 +66,19 @@ if(PKG_CONFIG_FOUND)
     endif()
     include_directories(${FCL_INCLUDE_DIRS})
     link_directories(${FCL_LIBRARY_DIRS}) 
-    message("FCL LIB DIRS ${FCL_LIBRARY_DIRS}")    
+    message("-- FCL LIB DIRS ${FCL_LIBRARY_DIRS}")    
+endif()
+
+############################# LOAD OCTOMAP #############################
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(OCTOMAP octomap)
+    if(NOT OCTOMAP_FOUND)
+       message(FATAL_ERROR "OCTOMAP could not be found")
+    endif()
+    include_directories(${OCTOMAP_INCLUDE_DIRS})
+    link_directories(${OCTOMAP_LIBRARY_DIRS}) 
+    message("-- OCTOMAP LIB DIRS ${OCTOMAP_LIBRARY_DIRS}") 
+    message("-- OctoMap libraries: ${OCTOMAP_LIBRARIES}")   
 endif()
 
 ############################# LOAD RBDL_INTERFACE #############################
@@ -71,7 +89,7 @@ if(PKG_CONFIG_FOUND)
     endif()
     include_directories(${RBDL_INCLUDE_DIRS})
     link_directories(${RBDL_LIBRARY_DIRS})  
-    message("RBDL include: ${RBDL_INCLUDE_DIRS}")   
+    message("-- RBDL include: ${RBDL_INCLUDE_DIRS}")   
 endif()
 
 ############################# LOAD EIGEN #############################
@@ -81,11 +99,9 @@ if(PKG_CONFIG_FOUND)
        message(FATAL_ERROR "EIGEN could not be found")
     endif()
     include_directories(${EIGEN_INCLUDE_DIRS}) 
-    message("Eigen include dirs: ${EIGEN_INCLUDE_DIRS}")
-    message("Eigen library dirs: ${EIGEN_LIBRARY_DIRS}")   
+    message("-- Eigen include dirs: ${EIGEN_INCLUDE_DIRS}")
+    message("-- Eigen library dirs: ${EIGEN_LIBRARY_DIRS}")   
 endif()
-
-message("current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(openrave_interface SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
@@ -103,15 +119,19 @@ target_link_libraries (openrave_interface
                        ${PYTHON_LIBRARIES}
                        ${OPENRAVE_LIBRARIES}
                        ${FCL_LIBRARIES}
-                       ${RBDL_LIBRARIES})
-
+                       ${RBDL_LIBRARIES}
+                       ${OCTOMAP_LIBRARIES})
 
 set(pkg_conf_file_in "${CMAKE_CURRENT_SOURCE_DIR}/openrave_interface.pc.in")
 set(pkg_conf_file_out "${CMAKE_CURRENT_BINARY_DIR}/openrave_interface.pc")
 configure_file("${pkg_conf_file_in}" "${pkg_conf_file_out}" @ONLY)
 
-install(TARGETS openrave_interface DESTINATION lib)
-install(FILES ${INCLUDE_DIR}/environment.hpp DESTINATION include/openrave_interface)
-install(FILES "${pkg_conf_file_out}" DESTINATION lib/pkgconfig/ COMPONENT pkgconfig)
+install(TARGETS openrave_interface DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx"
+  PATTERN ".DS_Store" EXCLUDE
+)
+install(FILES "${pkg_conf_file_out}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
 
 
