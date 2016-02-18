@@ -1,7 +1,7 @@
 import sys
 import time
 print sys.path.append("/usr/local/lib")
-from libopenrave_interface import Environment, v_string, v_double
+from libopenrave_interface import Environment, v_string, v_double, v2_double
 
 env = Environment()
 env.setupEnvironment("env_3dof.xml")
@@ -10,12 +10,19 @@ sensors[:] = ["sensor_BaseLaser2D.xml"]
 env.loadSensors(sensors)
 env.showViewer()
 env.getSensorManager()
-env.loadRobotFromURDF("test_3dof.urdf")
+#env.loadRobotFromURDF("test_3dof.urdf")
 
 joint_angles = v_double()
 joint_angles[:] = [0.0, 0.0, 0.0]
-env.transformSensorToEndEffector(joint_angles, "2DLaser")
+#env.transformSensorToEndEffector(joint_angles, "2DLaser")
+#env.triangulateScene()
+'''particle_joint_values = v2_double()
+env.updateRobotValues(joint_angles, 
+                      joint_angles,
+                      particle_joint_values,
+                      particle_joint_values)'''
 
 while True:
-    time.sleep(10)
+    env.triangulateScene()
+    time.sleep(1)
 

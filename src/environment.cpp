@@ -77,6 +77,21 @@ void Environment::transformSensorToEndEffector(const std::vector<double> &joint_
 	sensor_manager_->transformSensor(name, end_effector_transform);
 }
 
+void Environment::triangulateScene() {
+	OpenRAVE::TriMesh trimesh;
+	const std::string s = "";
+	env_->TriangulateScene(trimesh, 
+			               OpenRAVE::EnvironmentBase::SelectionOptions::SO_NoRobots,
+			               s);
+	cout << "triangulated" << endl;
+	for (size_t i = 0; i < trimesh.indices.size(); i++) {
+		cout << "index: " << trimesh.indices[i] << endl;
+	}
+	
+	for (size_t i = 0; i < trimesh.vertices.size(); i++) {
+		cout << "vertice: (" << trimesh.vertices[i].x << ", " << trimesh.vertices[i].y << ", " << trimesh.vertices[i].z << ")" << endl;
+	}
+}
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
 	if (!environment_setup_) {
@@ -127,12 +142,11 @@ void Environment::plotPermanentParticles(const std::vector<std::vector<double>> 
 	}	
 }
 
-void Environment::updateRobotValues(const std::vector<double> &current_joint_values,
-		                            const std::vector<double> &current_joint_velocities,
-								    const std::vector<std::vector<double>> &particle_joint_values,
-									const std::vector<std::vector<double>> &particle_colors,
-								    OpenRAVE::RobotBasePtr robot=nullptr) {	
-	OpenRAVE::RobotBasePtr robot_to_use(nullptr);
+void Environment::updateRobotValues(std::vector<double> &current_joint_values,
+		                            std::vector<double> &current_joint_velocities,
+								    std::vector<std::vector<double>> &particle_joint_values,
+									std::vector<std::vector<double>> &particle_colors) {	
+	OpenRAVE::RobotBasePtr robot_to_use = getRaveRobot();
 	
 	std::vector<OpenRAVE::KinBodyPtr> bodies;
 	env_->GetBodies(bodies);
@@ -143,14 +157,8 @@ void Environment::updateRobotValues(const std::vector<double> &current_joint_val
 		if (body->GetName().find(particle_string) != std::string::npos) {			
 			env_->Remove(body);
 		}		
-	}
-			
-	if (robot == nullptr) {
-		robot_to_use = getRaveRobot();
-	}
-	else {
-		robot_to_use = robot;
-	}
+	}		
+	
 	if (robot_to_use == nullptr) {
 		cout << "Propagator: Error: Environment or robot has not been initialized or passed as argument. Can't propagate the state" << endl;
 		return;	
@@ -306,6 +314,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("getRobot", &Environment::getRobot)
 		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
 		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)
+		.def("triangulateScene", &Environment::triangulateScene)
+		.def("updateRobotValues", &Environment::updateRobotValues)
 	;
 	
 }

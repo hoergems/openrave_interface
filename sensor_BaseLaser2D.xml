@@ -1,8 +1,8 @@
 <sensor name="2DLaser" type="BaseLaser2D">
     <translation>0 0 0</translation>
     <rotationaxis>0 0 1 0</rotationaxis>
-    <min_angle>-30</min_angle>
-    <max_angle>5</max_angle>
+    <min_angle>0</min_angle>
+    <max_angle>1</max_angle>
     <resolution>0.35</resolution>
     <min_range>0.01</min_range>
     <max_range>5</max_range>

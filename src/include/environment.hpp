@@ -50,11 +50,10 @@ class Environment {
 	    /**
 	     * Update the robot values in the viewer
 	     */
-	    void updateRobotValues(const std::vector<double> &current_joint_values,
-	    		   	   		   const std::vector<double> &current_joint_velocities,	
-	    					   const std::vector<std::vector<double>> &particle_joint_values,
-	    					   const std::vector<std::vector<double>> &particle_colors,
-	    		   	   		   OpenRAVE::RobotBasePtr robot);
+	    void updateRobotValues(std::vector<double> &current_joint_values,
+	    		   	   		   std::vector<double> &current_joint_velocities,	
+	    					   std::vector<std::vector<double>> &particle_joint_values,
+	    					   std::vector<std::vector<double>> &particle_colors);
 	    
 	    /**
 	     * Plot permanent particles
@@ -62,7 +61,15 @@ class Environment {
 	    void plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
 	    		                    const std::vector<std::vector<double>> &particle_colors);
 	    
+	    /**
+	     * Transforms a given sensor to the end effector frame
+	     */
 	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
+	    
+	    /**
+	     * Triangulate the scene
+	     */
+	    void triangulateScene();
 	
     private:
 	    /**

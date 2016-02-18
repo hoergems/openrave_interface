@@ -1,5 +1,5 @@
 <Environment>  
-  <KinBody name="Floor">
+  <!--KinBody name="Floor">
     <Body type="static" name="FloorBody" enable="true">
      <Geom type="box">
        <Translation>0.0 0.0 3.6</Translation>
@@ -8,7 +8,7 @@
      	<ambientColor>0.6 0.6 0.6</ambientColor>
      </Geom>
    </Body>
-  </KinBody>
+  </KinBody-->
   <!--AttachedSensor name="laser">
       <link>Floor</link>
       <translation>0.2 0 -0.1</translation>
@@ -23,7 +23,7 @@
       </sensor>
     </AttachedSensor-->
 
-  <KinBody name="GoalArea">
+  <!--KinBody name="GoalArea">
     <Body type="static" name="GoalAreaBody" enable="true">
       <Geom type="sphere">
         <Translation>-1.8826964422074735 1.5857733372105343 4.0</Translation>
@@ -32,19 +32,14 @@
      	<ambientColor>0.1 0.9 0.1</ambientColor>
       </Geom>
     </Body>
-  </KinBody> 
+  </KinBody--> 
    
   <KinBody name="obst2">
     <Body type="dynamic" name="obst2_link" enable="true">
       <Geom type="box">
-        <Translation>0.0 2.7 4.0</Translation>
-        <extents>0.2 1.0 1.2</extents>
-      </Geom> 
-      <!--Terrain name="grass">
-          <Damping>1.0</Damping>
-          <Cost>0.0</Cost>
-          <Traversable>false</Traversable>
-      </Terrain-->     
+        <Translation>5.0 0.0 0.0</Translation>
+        <extents>0.5 0.5 1.0</extents>
+      </Geom>        
     </Body>
   </KinBody>
   

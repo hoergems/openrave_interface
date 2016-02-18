@@ -35,6 +35,15 @@ void SensorManager::sensor_loop_() {
 			if (iter->second.first == OpenRAVE::SensorBase::SensorType::ST_Laser) {
 				cout << "got lazrrrr!!!" << endl;
 				sensor_data_ptr = boost::make_shared<SensorData<OpenRAVE::SensorBase::LaserSensorData>>(sensor_data);
+				
+				//For later
+				boost::shared_ptr<SensorData<OpenRAVE::SensorBase::LaserSensorData>> laser_data =
+						boost::static_pointer_cast<SensorData<OpenRAVE::SensorBase::LaserSensorData>>(sensor_data_ptr);
+				for (size_t i = 0; i < laser_data->getSensorData()->ranges.size(); i++) {
+					cout << "range: (" << laser_data->getSensorData()->ranges[i].x << ", " << 
+							       laser_data->getSensorData()->ranges[i].y << ", " <<
+							       laser_data->getSensorData()->ranges[i].z << ")" << endl;
+				}
 				last_sensor_readings.push_back(sensor_data_ptr);
 			}
 			else if (iter->second.first == OpenRAVE::SensorBase::SensorType::ST_Camera) {				
@@ -67,6 +76,7 @@ bool SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transfor
 	}
 	//Eigen::MatrixXd rot1(4, 4);
 	//Eigen::MatrixXd trans1(4, 4);
+	cout << transform << endl;
 	double angle = M_PI;
 	/**rot1 << cos(angle), -sin(angle), 0.0, 0.0,
 			sin(angle), cos(angle), 0.0, 0.0,
@@ -90,7 +100,7 @@ bool SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transfor
 		   transform(1, 0), transform(1, 1), transform(1, 2),
 		   transform(2, 0), transform(2, 1), transform(2, 2);
 	Eigen::Quaternion<double> quat(mat);
-	OpenRAVE::geometry::RaveVector<double> rot(quat.x(), quat.y(), quat.z(), quat.w());
+	OpenRAVE::geometry::RaveVector<double> rot(quat.w(), quat.x(), quat.y(), quat.z());
 	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3) + 0.01, 
 				                                 transform(1, 3),
 											     transform(2, 3));
