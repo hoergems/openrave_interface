@@ -77,6 +77,8 @@ class Environment {
 	     * Initializes the Octree
 	     */
 	    void initOctree();
+	    
+	    void drawBoxes();
 	
     private:
 	    /**
@@ -124,9 +126,9 @@ class Environment {
 	     */
 	    unsigned int particle_plot_limit_;
 	    
-	    boost::shared_ptr<octomap::OcTree const> octree_;
+	    boost::shared_ptr<octomap::OcTree> octree_;
 	    
-	    boost::shared_ptr<fcl::CollisionGeometry> tree_ptr_;
+	    boost::shared_ptr<fcl::OcTree> tree_ptr_;
 	
 };
 

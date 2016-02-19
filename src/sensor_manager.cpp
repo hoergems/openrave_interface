@@ -42,12 +42,12 @@ void SensorManager::sensor_loop_() {
 	}
 }
 
-void SensorManager::setLatestSensorData(OpenRAVE::SensorBase::SensorDataPtr &sensor_data) {
+void SensorManager::setLatestSensorData(LaserSensorDataConstPtr &sensor_data) {
 	boost::mutex::scoped_lock scoped_lock(mutex_);
 	latest_sensor_data_ = sensor_data;
 }
 
-void SensorManager::getLatestSensorData(OpenRAVE::SensorBase::SensorDataPtr &sensor_data) {
+void SensorManager::getLatestSensorData(LaserSensorDataConstPtr &sensor_data) {
 	boost::mutex::scoped_lock scoped_lock(mutex_);
 	sensor_data = latest_sensor_data_;
 }
@@ -58,8 +58,8 @@ bool SensorManager::activateSensor(std::string name) {
 		return false;
 	}
 	
-	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, true);
-	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, true);
+	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, false);
+	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, false);
 	return true;
 }
 
@@ -68,7 +68,7 @@ bool SensorManager::disableSensor(std::string name) {
 		cout << "SensorManager: Error: sensor " << name << " doesn't exist" << endl;
 		return false;
 	}
-	
+	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());
 	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOff, true);
 	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOff, true);
 	return true;

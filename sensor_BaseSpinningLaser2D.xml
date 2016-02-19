@@ -1,4 +1,4 @@
-<sensor name="Spinning2DLaser" type="BaseSpinningLaser2D">
+<sensor name="SpinningLaser2D" type="BaseSpinningLaser2D">
     <translation>0 0 0</translation>
     <rotationaxis>1 0 0 0</rotationaxis>
     <min_angle>-90</min_angle>

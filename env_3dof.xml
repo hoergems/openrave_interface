@@ -25,8 +25,9 @@
   <KinBody name="obst2">
     <Body type="dynamic" name="obst2_link" enable="true">
       <Geom type="box">
-        <Translation>20.0 0.0 0.0</Translation>
+        <Translation>7 0.0 0.0</Translation>
         <extents>1.0 1.0 1.0</extents>
+        <transparency>0.9</transparency>
       </Geom>        
     </Body>
   </KinBody>

@@ -110,11 +110,57 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 
 void Environment::initOctree() {
 	// The FCL octree
-	octree_ = boost::make_shared<const octomap::OcTree>(0.1);
+	octree_ = boost::make_shared<octomap::OcTree>(0.1);
 	tree_ptr_ = boost::make_shared<fcl::OcTree>(octree_);
-	//boost::shared_ptr<CollisionGeometry> tree_ptr
-	//OcTree* tree = new OcTree(boost::shared_ptr<const octomap::OcTree>(generateOcTree()));
-	//boost::shared_ptr<CollisionGeometry> tree_ptr(tree);	
+}
+
+void Environment::drawBoxes() {	
+	LaserSensorDataConstPtr laser_data; 
+	sensor_manager_->getLatestSensorData(laser_data);
+	std::vector<double> robot_state;
+	std::vector<double> joint_angles;
+	robot_->getState(robot_state);
+	for (size_t i = 0; i < robot_state.size() / 2; i++) {
+		joint_angles.push_back(robot_state[i]);
+	}
+ 	for (size_t i = 0; i < laser_data->ranges.size() - 1; i++) {
+		if (laser_data->intensity[i] > 0) {			
+			Eigen::VectorXd res(4);
+			res[0] = laser_data->positions[0].x + laser_data->ranges[i].x;
+			res[1] = laser_data->positions[0].y + laser_data->ranges[i].y;
+			res[2] = laser_data->positions[0].z + laser_data->ranges[i].z;			
+			const octomap::point3d point(res[0], res[1], res[2]);
+			octree_->updateNode(point, true);
+		}
+	}
+	
+	
+	std::vector<boost::array<double, 6> > tree_boxes = tree_ptr_->toBoxes();
+	std::vector<OpenRAVE::AABB> rave_boxes;
+	OpenRAVE::KinBodyPtr box_kin_body = OpenRAVE::RaveCreateKinBody(env_);
+	for (size_t i = 0; i < tree_boxes.size(); i++) {
+		cout << "x: " << tree_boxes[i][0] << endl;
+		cout << "y: " << tree_boxes[i][1] << endl;
+		cout << "z: " << tree_boxes[i][2] << endl;		
+		cout << "size: " << tree_boxes[i][3] << endl;
+		cout << "c: " << tree_boxes[i][4] << endl;
+		cout << "t: " << tree_boxes[i][5] << endl;
+		OpenRAVE::Vector trans(tree_boxes[i][0], 
+				               tree_boxes[i][1],
+				               tree_boxes[i][2]);
+		OpenRAVE::Vector extends(tree_boxes[i][3] / 2, 
+				                 tree_boxes[i][3] / 2, 
+				                 tree_boxes[i][3] / 2);
+		OpenRAVE::AABB aabb(trans, extends);
+		rave_boxes.push_back(aabb);
+	}
+	const std::vector<OpenRAVE::AABB> const_rave_boxes = rave_boxes;
+	const std::string box_name = "octomap";
+	box_kin_body->SetName(box_name);    
+	box_kin_body->InitFromBoxes(const_rave_boxes, true);
+	box_kin_body->Enable(false); 
+	env_->Add(box_kin_body, true);
+	cout << "tree depth: " << octree_->getTreeDepth() << endl;
 }
 
 void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
@@ -317,6 +363,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getEndEffectorVelocity", &Robot::getEndEffectorVelocity)
 							.def("getProcessMatrices", &Robot::getProcessMatrices)						
 							.def("getEndEffectorJacobian", &Robot::getEndEffectorJacobian)
+							.def("setState", &Robot::setState)
+							.def("getState", &Robot::getState)
 	;
 	
 	class_<Environment, boost::shared_ptr<Environment>>("Environment", init<>())
@@ -331,6 +379,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("triangulateScene", &Environment::triangulateScene)
 		.def("updateRobotValues", &Environment::updateRobotValues)
 		.def("initOctree", &Environment::initOctree)
+		.def("drawBoxes", &Environment::drawBoxes)
 	;
 	
 }
