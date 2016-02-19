@@ -35,7 +35,7 @@ env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("test_3dof.urdf")
 env.initOctree()
-
+time.sleep(5)
 joint_angles = [0.0, 0.0, 0.0]
 prog(joint_angles, sensor_name)
 joint_angles[0] = 0.1
@@ -47,6 +47,12 @@ joint_angles[1] = 0.1
 prog(joint_angles, sensor_name)
 joint_angles[0] = 0.3
 joint_angles[1] = -0.1
+prog(joint_angles, sensor_name)
+joint_angles[0] = -0.3
+prog(joint_angles, sensor_name)
+joint_angles[0] = 0.7
+joint_angles[1] = 0.2
+joint_angles[2] = -0.2
 prog(joint_angles, sensor_name)
 time.sleep(20)
 

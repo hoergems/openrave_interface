@@ -370,6 +370,7 @@ Robot::Robot(std::string robot_file):
 	kinematics_->setLinkDimensions(active_link_dimensions_);
 	cout << "active_link_dimensions_" << active_link_dimensions_.size() << endl;
 	
+	cout << "load model" << endl;
 	rbdl_interface_->load_model(robot_file);
     propagator_->getIntegrator()->setRBDLInterface(rbdl_interface_);
 	rbdl_interface_->setViscous(joint_dampings_);

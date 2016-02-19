@@ -245,7 +245,7 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 			newJointValues.push_back(current_joint_values[i]);
 		}
 	}	
-		
+	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());	
 	newJointValues.push_back(0);	
 	robot_to_use->SetDOFValues(newJointValues);
 	size_t num_plot = particle_plot_limit_;	
@@ -289,7 +289,7 @@ OpenRAVE::RobotBasePtr Environment::getRaveRobot() {
     std::vector<OpenRAVE::KinBodyPtr> bodies;
     env_->GetBodies(bodies);
     for (auto &body: bodies) {
-    	if (body->GetDOF() > 0) {
+    	if (body->GetName() == "myrobot") {
     		OpenRAVE::RobotBasePtr robot = boost::static_pointer_cast<OpenRAVE::RobotBase>(body);
     		return robot;
     	}    	
