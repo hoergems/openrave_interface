@@ -18,12 +18,26 @@ set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
 
 ############################# LOAD URDF #############################
 if(PKG_CONFIG_FOUND)
-    pkg_check_modules(URDF urdf)
-    if(NOT URDF_FOUND)
-       message(FATAL_ERROR "URDF package could not be found")
+    pkg_check_modules(URDFDOM urdfdom)
+    if(NOT URDFDOM_FOUND)
+       message(FATAL_ERROR "URDFDOM package could not be found")
     endif()
-    include_directories(${URDF_INCLUDE_DIRS})
-    link_directories(${URDF_LIBRARY_DIRS})    
+    include_directories(${URDFDOM_INCLUDE_DIRS})
+    link_directories(${URDFDOM_LIBRARY_DIRS})
+    message("-- URDFDOM INCLUDE DIRS: ${URDFDOM_INCLUDE_DIRS}")  
+    message("-- URDFDOM LIBRARY DIRS: ${URDFDOM_LIBRARY_DIRS}")
+    message("-- URDFDOM LIBRARIES: ${URDFDOM_LIBRARIES}")    
+endif()
+
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(URDFDOM_HEADERS urdfdom_headers)
+    if(NOT URDFDOM_FOUND)
+       message(FATAL_ERROR "URDFDOM_HEADERS package could not be found")
+    endif()
+    include_directories(${URDFDOM_HEADERS_INCLUDE_DIRS})
+    
+    message("-- URDFDOM_HEADERS INCLUDE DIRS: ${URDFDOM_HEADERS_INCLUDE_DIRS}")  
+    
 endif()
 
 ############################# LOAD PYTHON #############################
@@ -114,7 +128,7 @@ add_library(openrave_interface SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/src/integrate.cpp)
 
 target_link_libraries (openrave_interface
-                       ${URDF_LIBRARIES}
+                       ${URDFDOM_LIBRARIES}
                        ${Boost_LIBRARIES}
                        ${PYTHON_LIBRARIES}
                        ${OPENRAVE_LIBRARIES}
