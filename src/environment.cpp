@@ -123,17 +123,28 @@ void Environment::drawBoxes() {
 	for (size_t i = 0; i < robot_state.size() / 2; i++) {
 		joint_angles.push_back(robot_state[i]);
 	}
+	
+	octomap::Pointcloud scan_points;
+	const octomap::point3d origin(laser_data->positions[0].x, 
+			                      laser_data->positions[0].y, 
+								  laser_data->positions[0].z);
+	
  	for (size_t i = 0; i < laser_data->ranges.size() - 1; i++) {
 		if (laser_data->intensity[i] > 0) {			
-			Eigen::VectorXd res(4);
+			/**Eigen::VectorXd res(4);
 			res[0] = laser_data->positions[0].x + laser_data->ranges[i].x;
 			res[1] = laser_data->positions[0].y + laser_data->ranges[i].y;
 			res[2] = laser_data->positions[0].z + laser_data->ranges[i].z;			
 			const octomap::point3d point(res[0], res[1], res[2]);
-			octree_->updateNode(point, true);
+			scan_points.push_back(point);*/
+			const octomap::point3d point(laser_data->positions[0].x + laser_data->ranges[i].x,
+					                     laser_data->positions[0].y + laser_data->ranges[i].y,
+										 laser_data->positions[0].z + laser_data->ranges[i].z);
+			//octree_->updateNode(point, true);
+			scan_points.push_back(point);
 		}
 	}
-	
+	octree_->insertScan(scan_points, origin);
 	
 	std::vector<boost::array<double, 6> > tree_boxes = tree_ptr_->toBoxes();
 	std::vector<OpenRAVE::AABB> rave_boxes;

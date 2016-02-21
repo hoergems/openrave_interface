@@ -1,7 +1,6 @@
 <sensor name="FlashLidar3D" type="BaseFlashLidar3D">
    <translation>3.0 0 0</translation>
-   <rotationaxis>0 1 0 90</rotationaxis>
-   <minrange>0.1</minrange>
+   <rotationaxis>0 1 0 90</rotationaxis>   
    <maxrange>10</maxrange>
    <time_scan>0.02</time_scan>
    <KK>30 30 30 30</KK>

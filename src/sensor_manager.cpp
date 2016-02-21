@@ -57,9 +57,9 @@ bool SensorManager::activateSensor(std::string name) {
 		cout << "SensorManager: Error: sensor " << name << " doesn't exist" << endl;
 		return false;
 	}
-	
-	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, false);
-	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, false);
+	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());
+	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, true);
+	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, true);
 	return true;
 }
 
@@ -95,7 +95,7 @@ bool SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transfor
 		   transform(2, 0), transform(2, 1), transform(2, 2);
 	Eigen::Quaternion<double> quat(mat);
 	OpenRAVE::geometry::RaveVector<double> rot(quat.w(), quat.x(), quat.y(), quat.z());
-	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3) + 2.0 * std::numeric_limits<double>::epsilon(), 
+	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3) + 0.001, 
 				                                 transform(1, 3),
 											     transform(2, 3));
 	const OpenRAVE::Transform sensor_trans(rot, trans);

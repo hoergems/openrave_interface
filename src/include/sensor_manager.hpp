@@ -91,6 +91,7 @@ struct sensor_callback {
 			last_stamp = sensor_data->__stamp;
 			LaserSensorDataConstPtr laser_data = 
 					boost::static_pointer_cast<OpenRAVE::SensorBase::LaserSensorData const>(sensor_data);
+			cout << "HELLO" << endl;
 			manager->setLatestSensorData(laser_data);
 			/**for (size_t i = 0; i < laser_data->ranges.size(); i++) {
 				cout << "len positions: " << laser_data->positions.size() << endl;;
