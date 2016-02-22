@@ -29,7 +29,8 @@ Environment::Environment():
 	robot_model_file_(),
 	particle_plot_limit_(50),
 	octree_(nullptr),
-	tree_ptr_(nullptr)
+	tree_ptr_(nullptr),
+	kin_bodies_default_color_()
 {
 	
 }
@@ -49,6 +50,7 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	environment_setup_ = true;
 	//loadSensorsFromXML(sensor_files);
 	sensor_manager_->setEnvironment(env_);
+	setupDefaultObstacleColors_();
 	return environment_setup_;
 }
 
@@ -130,22 +132,15 @@ void Environment::drawBoxes() {
 								  laser_data->positions[0].z);
 	
  	for (size_t i = 0; i < laser_data->ranges.size() - 1; i++) {
-		if (laser_data->intensity[i] > 0) {			
-			/**Eigen::VectorXd res(4);
-			res[0] = laser_data->positions[0].x + laser_data->ranges[i].x;
-			res[1] = laser_data->positions[0].y + laser_data->ranges[i].y;
-			res[2] = laser_data->positions[0].z + laser_data->ranges[i].z;			
-			const octomap::point3d point(res[0], res[1], res[2]);
-			scan_points.push_back(point);*/
+		if (laser_data->intensity[i] > 0) {
 			const octomap::point3d point(laser_data->positions[0].x + laser_data->ranges[i].x,
 					                     laser_data->positions[0].y + laser_data->ranges[i].y,
 										 laser_data->positions[0].z + laser_data->ranges[i].z);
-			//octree_->updateNode(point, true);
 			scan_points.push_back(point);
 		}
 	}
+ 	
 	octree_->insertScan(scan_points, origin);
-	
 	std::vector<boost::array<double, 6> > tree_boxes = tree_ptr_->toBoxes();
 	std::vector<OpenRAVE::AABB> rave_boxes;
 	OpenRAVE::KinBodyPtr box_kin_body = OpenRAVE::RaveCreateKinBody(env_);
@@ -210,12 +205,82 @@ void Environment::plotPermanentParticles(const std::vector<std::vector<double>> 
 	}	
 }
 
+void Environment::removePermanentParticles() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+    env_->GetBodies(bodies);
+    // Remove the particle bodies from the scene
+    std::string particle_string = "permanent_";
+    for (auto &body: bodies) {		
+    	if (body->GetName().find(particle_string) != std::string::npos) {			
+    		env_->Remove(body);
+    	}		
+    }
+}
+
+void Environment::setupDefaultObstacleColors_() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+		for (auto &link: links) {
+			const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());
+			std::vector<OpenRAVE::RaveVector<float>> colors;
+			colors.push_back(geometries[0]->GetDiffuseColor());
+			colors.push_back(geometries[0]->GetAmbientColor());
+			kin_bodies_default_color_[body->GetName()] = colors;	
+		}		
+	}
+}
+
+void Environment::setKinBodiesDefaultColor() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+		for (auto &link: links) {			
+			const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());			
+			std::vector<OpenRAVE::RaveVector<float>> colors = kin_bodies_default_color_[body->GetName()];
+			if (colors.size() > 0) {
+			    geometries[0]->SetDiffuseColor(kin_bodies_default_color_[body->GetName()][0]);
+			    geometries[0]->SetAmbientColor(kin_bodies_default_color_[body->GetName()][1]);
+			}
+		}
+	}
+}
+
+void Environment::setObstacleColor(std::string &obstacle_name, 
+ 		                               std::vector<double> &diffuse_color,
+ 		                               std::vector<double> &ambient_color) {
+ 	std::vector<OpenRAVE::KinBodyPtr> bodies;
+    env_->GetBodies(bodies);
+     for (auto &body: bodies) {    	
+     	const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+     	for (auto &link: links) {
+     		const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());
+     		for (auto &geom: geometries) {
+     			if (body->GetName().find(obstacle_name) != std::string::npos) {
+     				const OpenRAVE::RaveVector<float> d_color(diffuse_color[0],
+     						                                  diffuse_color[1],
+     						                                  diffuse_color[2],
+     						                                  diffuse_color[3]);
+     				const OpenRAVE::RaveVector<float> a_color(ambient_color[0],
+     				    						              ambient_color[1],
+     				    						              ambient_color[2],
+     				    						              ambient_color[3]);     				
+     				geom->SetDiffuseColor(d_color);
+     				geom->SetAmbientColor(a_color);
+     						                                        		
+     			}
+     		}		
+     	}
+    }
+}
+
 void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 		                            std::vector<double> &current_joint_velocities,
 								    std::vector<std::vector<double>> &particle_joint_values,
 									std::vector<std::vector<double>> &particle_colors) {	
-	OpenRAVE::RobotBasePtr robot_to_use = getRaveRobot();
-	
+	OpenRAVE::RobotBasePtr robot_to_use = getRaveRobot();	
 	std::vector<OpenRAVE::KinBodyPtr> bodies;
 	env_->GetBodies(bodies);
 	std::string particle_string = "particle";
@@ -255,7 +320,8 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 		else {
 			newJointValues.push_back(current_joint_values[i]);
 		}
-	}	
+	}
+	
 	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());	
 	newJointValues.push_back(0);	
 	robot_to_use->SetDOFValues(newJointValues);
@@ -263,6 +329,7 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 	if (particle_joint_values.size() < num_plot) {
 		num_plot = particle_joint_values.size();
 	}
+	
 	
 	// Here we plot non-permanent particles
 	for (size_t i = 0; i < num_plot; i++) {
@@ -299,12 +366,26 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 OpenRAVE::RobotBasePtr Environment::getRaveRobot() {
     std::vector<OpenRAVE::KinBodyPtr> bodies;
     env_->GetBodies(bodies);
-    for (auto &body: bodies) {
-    	if (body->GetName() == "myrobot") {
+    for (auto &body: bodies) {    	
+    	if (body->GetLinks().size() >1) {
     		OpenRAVE::RobotBasePtr robot = boost::static_pointer_cast<OpenRAVE::RobotBase>(body);
     		return robot;
     	}    	
     }   
+}
+
+void Environment::getGoalArea(std::vector<double> &goal_area) {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		cout << "body name: " << body->GetName() << endl;
+		if (body->GetName() == "GoalArea") {
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.x);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.y);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.z);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetSphereRadius());
+		}
+	}
 }
 
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
@@ -378,6 +459,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getState", &Robot::getState)
 	;
 	
+	
 	class_<Environment, boost::shared_ptr<Environment>>("Environment", init<>())
 		.def("setupEnvironment", &Environment::setupEnvironment)
 		.def("loadSensors", &Environment::loadSensorsFromXML)
@@ -391,6 +473,11 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("updateRobotValues", &Environment::updateRobotValues)
 		.def("initOctree", &Environment::initOctree)
 		.def("drawBoxes", &Environment::drawBoxes)
+		.def("setKinBodiesDefaultColor", &Environment::setKinBodiesDefaultColor)
+		.def("setObstacleColor", &Environment::setObstacleColor)
+		.def("getGoalArea", &Environment::getGoalArea)
+		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
+		.def("removePermanentParticles", &Environment::removePermanentParticles)
 	;
 	
 }

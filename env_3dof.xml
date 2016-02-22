@@ -1,14 +1,14 @@
 <Environment>  
-  <!--KinBody name="Floor">
-    <Body type="static" name="FloorBody" enable="true">
+  <KinBody name="Floor">
+    <Body type="static" name="FloorBody" enable="false">
      <Geom type="box">
-       <Translation>0.0 0.0 3.6</Translation>
+       <Translation>0.0 0.0 0.0</Translation>
        <extents>10 10 0.005</extents>
        <diffuseColor>.1 .1 .9</diffuseColor>
      	<ambientColor>0.6 0.6 0.6</ambientColor>
      </Geom>
    </Body>
-  </KinBody-->
+  </KinBody>
   
 
   <!--KinBody name="GoalArea">

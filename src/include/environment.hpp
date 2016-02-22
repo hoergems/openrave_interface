@@ -64,6 +64,11 @@ class Environment {
 	    		                    const std::vector<std::vector<double>> &particle_colors);
 	    
 	    /**
+	     * Remove the permanent particles
+	     */
+	    void removePermanentParticles();
+	    
+	    /**
 	     * Transforms a given sensor to the end effector frame
 	     */
 	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
@@ -79,6 +84,14 @@ class Environment {
 	    void initOctree();
 	    
 	    void drawBoxes();
+	    
+	    void setObstacleColor(std::string &obstacle_name, 
+	         		          std::vector<double> &diffuse_color,
+	        		          std::vector<double> &ambient_color);
+	    
+	    void getGoalArea(std::vector<double> &goal_area);
+	    
+	    void setKinBodiesDefaultColor();
 	
     private:
 	    /**
@@ -90,6 +103,8 @@ class Environment {
 	     * The sensor manager
 	     */
 	    std::shared_ptr<SensorManager> sensor_manager_;
+	    
+	    void setupDefaultObstacleColors_();
 	    
 	    /**
 	     * Determines of the environment has been set up
@@ -129,6 +144,8 @@ class Environment {
 	    boost::shared_ptr<octomap::OcTree> octree_;
 	    
 	    boost::shared_ptr<fcl::OcTree> tree_ptr_;
+	    
+	    std::map<std::string, std::vector<OpenRAVE::RaveVector<float>>> kin_bodies_default_color_;
 	
 };
 
