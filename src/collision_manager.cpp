@@ -61,8 +61,7 @@ void CollisionManager::triangulateScene() {
 	env_bvh_model_->beginModel();
 	env_bvh_model_->addSubModel(vertices, triangles);
 	env_bvh_model_->endModel();	
-	env_collision_object_ = boost::make_shared<fcl::CollisionObject>(env_bvh_model_, identity_transform_);
-	//fcl::CollisionObject *obj = new fcl::CollisionObject(env_bvh_model_, tf);
+	env_collision_object_ = boost::make_shared<fcl::CollisionObject>(env_bvh_model_, identity_transform_);	
 }
 
 bool CollisionManager::inCollisionDiscreteEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects) {

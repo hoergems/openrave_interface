@@ -84,12 +84,18 @@ class Environment {
 	     */
 	    void initOctree();
 	    
+	    /**
+	     * Draw the Octree boxes
+	     */
 	    void drawBoxes();
 	    
 	    void setObstacleColor(std::string &obstacle_name, 
 	         		          std::vector<double> &diffuse_color,
 	        		          std::vector<double> &ambient_color);
 	    
+	    /**
+	     * Get the goal area as a vector of doubles (position and radius)
+	     */
 	    void getGoalArea(std::vector<double> &goal_area);
 	    
 	    void setKinBodiesDefaultColor();
@@ -104,6 +110,7 @@ class Environment {
 	     * The sensor manager
 	     */
 	    std::shared_ptr<SensorManager> sensor_manager_;
+	    
 	    
 	    void setupDefaultObstacleColors_();
 	    
@@ -147,8 +154,14 @@ class Environment {
 	     */
 	    unsigned int particle_plot_limit_;
 	    
+	    /**
+	     * The Octree which is built from sensor scans
+	     */
 	    boost::shared_ptr<octomap::OcTree> octree_;
 	    
+	    /**
+	     * The FCL Octree collision geometry
+	     */
 	    boost::shared_ptr<fcl::OcTree> tree_ptr_;
 	    
 	    std::map<std::string, std::vector<OpenRAVE::RaveVector<float>>> kin_bodies_default_color_;
