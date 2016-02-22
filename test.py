@@ -9,7 +9,7 @@ def test_collision(env):
     joint_angles_v = v_double()
     joint_angles_v_2 = v_double()
     joint_angles_v[:] = [0.2, 0.0, 0.0]
-    joint_angles_v_2[:] = [-0.2, 0.0, 0.0]
+    joint_angles_v_2[:] = [0.2, 0.0, 0.0]
     particle_joint_values = v2_double()
     
     env.updateRobotValues(joint_angles_v, 
@@ -20,8 +20,8 @@ def test_collision(env):
     robot_collision_objects_start = robot.createRobotCollisionObjects(joint_angles_v)
     robot_collision_objects_goal = robot.createRobotCollisionObjects(joint_angles_v_2)
     for i in xrange(len(robot_collision_objects_start)):
-        in_collision = collision_manager.inCollisionContinuous([robot_collision_objects_start[i],
-                                                                robot_collision_objects_goal[i]])
+        in_collision = collision_manager.inCollisionContinuousEnvironment([robot_collision_objects_start[i],
+                                                                           robot_collision_objects_goal[i]])
         print in_collision
     time.sleep(100)
     

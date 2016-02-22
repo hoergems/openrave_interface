@@ -11,6 +11,7 @@
 #include "fcl/continuous_collision.h"
 #include <fcl/BVH/BVH_model.h>
 #include <fcl/data_types.h>
+#include <fcl/octree.h>
 
 namespace shared {
     struct CollisionData {
@@ -31,40 +32,57 @@ namespace shared {
 	public:
 		CollisionManager();
 		
+		/**
+		 * Set the environment collision checking is performed on
+		 */
 		void setEnvironment(OpenRAVE::EnvironmentBasePtr &env);
 		
 		/**
-		 * Set the obstacles that make up the terrain
+		 * Set the Octree representing the environment
 		 */
-		//void setObstacles(std::vector<std::shared_ptr<Obstacle> > &obstacles);
-		
-		/**
-		 * Python wrapper for setObstacles
-		 */
-		//void setObstaclesPy(boost::python::list &ns);
+		void setOctree(boost::shared_ptr<fcl::OcTree> &tree);
 		
 		/**
 		 * Check of the robot collision objects collide with the environment 
 		 */
-		bool inCollisionDiscrete(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects);
+		bool inCollisionDiscreteEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects);
 		
 		/**
-		 * A python wrapper for inCollisionDiscrete
+		 * Determines if the robot collides with the Octree
 		 */
-		bool inCollisionDiscretePy(boost::python::list &ns);
-		
-		/**
-		 * A python wrapper for inCollisionContinuous
-		 */
-		bool inCollisionContinuousPy(boost::python::list &ns);
+		bool inCollisionDiscreteOctree(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects);
 		
 		/**
 		 * Check if a robot in motion collides with the environment
 		 */
-		bool inCollisionContinuous(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-				std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal);
+		bool inCollisionContinuousEnvironment(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
+						                      std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal);
 		
+		/**
+		 * Check if the robot continuously collides with the octree
+		 */
+		bool inCollisionContinuousOctree(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
+								         std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal);
 		
+		/**
+		 * A python wrapper for inCollisionDiscreteEnvironment
+		 */
+		bool inCollisionDiscreteEnvironmentPy(boost::python::list &ns);
+		
+		/**
+		 * A python wrapper for inCollisionDiscreteOctree
+		 */
+		bool inCollisionDiscreteOctreePy(boost::python::list &ns);
+		
+		/**
+		 * A python wrapper for inCollisionContinuous
+		 */
+		bool inCollisionContinuousEnvironmentPy(boost::python::list &ns);
+		
+		/**
+		 * A python wrapper for inCollisionContinuousOctree
+		 */
+		bool inCollisionContinuousOctreePy(boost::python::list &ns);
 		
 		/**
 		 * Triangulate the scene
@@ -72,13 +90,24 @@ namespace shared {
 		void triangulateScene();
 		
 	private:
+		bool inCollisionDiscrete_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects,
+				                  boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
+		
+		bool inCollisionContinuous_(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
+						            std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal,
+						            boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
+		
 		boost::shared_ptr<fcl::BVHModel<fcl::OBBRSS>> env_bvh_model_;
 		
 		boost::shared_ptr<fcl::CollisionObject> env_collision_object_;
 		
+		boost::shared_ptr<fcl::CollisionObject> octree_collision_object_;
+		
 		fcl::Transform3f identity_transform_;
 		
 		OpenRAVE::EnvironmentBasePtr env_;
+		
+		boost::shared_ptr<fcl::CollisionGeometry> octree_;
 		
 		fcl::BroadPhaseCollisionManager* obstacle_collision_manager_;
 		

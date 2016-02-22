@@ -106,6 +106,7 @@ void Environment::initOctree() {
 	// The FCL octree
 	octree_ = boost::make_shared<octomap::OcTree>(0.1);
 	tree_ptr_ = boost::make_shared<fcl::OcTree>(octree_);
+	collision_manager_->setOctree(tree_ptr_);
 }
 
 void Environment::drawBoxes() {	
@@ -453,8 +454,10 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 	;
 	
 	class_<CollisionManager>("CollisionChecker", init<>())				
-				.def("inCollisionDiscrete", &CollisionManager::inCollisionDiscretePy)
-				.def("inCollisionContinuous", &CollisionManager::inCollisionContinuousPy)
+				.def("inCollisionDiscreteEnvironment", &CollisionManager::inCollisionDiscreteEnvironmentPy)
+				.def("inCollisionContinuousEnvironment", &CollisionManager::inCollisionContinuousEnvironmentPy)
+				.def("inCollisionDiscreteOctree", &CollisionManager::inCollisionDiscreteOctreePy)
+				.def("inCollisionContinuousOctree", &CollisionManager::inCollisionContinuousOctreePy)
 	;
 	
 	
