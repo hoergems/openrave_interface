@@ -32,10 +32,10 @@
     </Body>
   </KinBody-->
   
-  <!--KinBody name="shelf1" file="ikeashelf.kinbody.xml">
-    <Translation>6.0 2.0 0</Translation>
+  <KinBody name="shelf1" file="ikeashelf.kinbody.xml">
+    <Translation>2.5 0.0 0</Translation>
     <RotationMat>-1 0 0 0 -1 0 0 0 1</RotationMat>
-  </KinBody-->
+  </KinBody>
   
   <!--KinBody file="table_washer.kinbody.xml" name="Destination">
     <Translation>4 -1.0164 0.7479</Translation>

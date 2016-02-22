@@ -454,6 +454,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 	
 	class_<CollisionManager>("CollisionChecker", init<>())				
 				.def("inCollisionDiscrete", &CollisionManager::inCollisionDiscretePy)
+				.def("inCollisionContinuous", &CollisionManager::inCollisionContinuousPy)
 	;
 	
 	

@@ -8,6 +8,7 @@
 #include "fcl/broadphase/broadphase_dynamic_AABB_tree.h"
 #include "fcl/collision_data.h"
 #include "fcl/collision.h"
+#include "fcl/continuous_collision.h"
 #include <fcl/BVH/BVH_model.h>
 #include <fcl/data_types.h>
 
@@ -50,7 +51,12 @@ namespace shared {
 		/**
 		 * A python wrapper for inCollisionDiscrete
 		 */
-		bool inCollisionDiscretePy(boost::python::list &ns); 
+		bool inCollisionDiscretePy(boost::python::list &ns);
+		
+		/**
+		 * A python wrapper for inCollisionContinuous
+		 */
+		bool inCollisionContinuousPy(boost::python::list &ns);
 		
 		/**
 		 * Check if a robot in motion collides with the environment

@@ -5,8 +5,11 @@ from libopenrave_interface import Environment, v_string, v_double, v2_double
 
 def test_collision(env):
     robot = env.getRobot()
+    collision_manager = env.getCollisionManager()
     joint_angles_v = v_double()
-    joint_angles_v[:] = [0.0, 0.9, 0.0]
+    joint_angles_v_2 = v_double()
+    joint_angles_v[:] = [0.2, 0.0, 0.0]
+    joint_angles_v_2[:] = [-0.2, 0.0, 0.0]
     particle_joint_values = v2_double()
     
     env.updateRobotValues(joint_angles_v, 
@@ -14,11 +17,13 @@ def test_collision(env):
                           particle_joint_values,
                           particle_joint_values)
     
-    robot_collision_objects = robot.createRobotCollisionObjects(joint_angles_v)
-    collision_manager = env.getCollisionManager()
-    in_collision = collision_manager.inCollisionDiscrete(robot_collision_objects)
-    print in_collision
-    time.sleep(10)
+    robot_collision_objects_start = robot.createRobotCollisionObjects(joint_angles_v)
+    robot_collision_objects_goal = robot.createRobotCollisionObjects(joint_angles_v_2)
+    for i in xrange(len(robot_collision_objects_start)):
+        in_collision = collision_manager.inCollisionContinuous([robot_collision_objects_start[i],
+                                                                robot_collision_objects_goal[i]])
+        print in_collision
+    time.sleep(100)
     
 
 def prog(joint_angles, sensor_name):
