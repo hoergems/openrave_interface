@@ -8,6 +8,7 @@
 #include "viewer.hpp"
 #include "sensor_manager.hpp"
 #include "robot.hpp"
+#include "collision_manager.hpp"
 #include <map>
 #include <tuple>
 #include <fcl/octree.h>
@@ -50,6 +51,11 @@ class Environment {
 	    std::shared_ptr<shared::Robot> getRobot();
 	    
 	    /**
+	     * Get the collision manager
+	     */
+	    std::shared_ptr<shared::CollisionManager> getCollisionManager();
+	    
+	    /**
 	     * Update the robot values in the viewer
 	     */
 	    void updateRobotValues(std::vector<double> &current_joint_values,
@@ -72,11 +78,6 @@ class Environment {
 	     * Transforms a given sensor to the end effector frame
 	     */
 	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
-	    
-	    /**
-	     * Triangulate the scene
-	     */
-	    void triangulateScene();
 	    
 	    /**
 	     * Initializes the Octree
@@ -130,6 +131,11 @@ class Environment {
 	     * The robot
 	     */
 	    std::shared_ptr<shared::Robot> robot_;
+	    
+	    /**
+	     * The collision manager
+	     */
+	    std::shared_ptr<shared::CollisionManager> collision_manager_;
 	    
 	    /**
 	     * The robot model file

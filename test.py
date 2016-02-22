@@ -3,6 +3,24 @@ import time
 print sys.path.append("/usr/local/lib")
 from libopenrave_interface import Environment, v_string, v_double, v2_double
 
+def test_collision(env):
+    robot = env.getRobot()
+    joint_angles_v = v_double()
+    joint_angles_v[:] = [0.0, 0.9, 0.0]
+    particle_joint_values = v2_double()
+    
+    env.updateRobotValues(joint_angles_v, 
+                          joint_angles_v,
+                          particle_joint_values,
+                          particle_joint_values)
+    
+    robot_collision_objects = robot.createRobotCollisionObjects(joint_angles_v)
+    collision_manager = env.getCollisionManager()
+    in_collision = collision_manager.inCollisionDiscrete(robot_collision_objects)
+    print in_collision
+    time.sleep(10)
+    
+
 def prog(joint_angles, sensor_name):
     joint_angles_v = v_double()
     joint_velocities = v_double()
@@ -35,6 +53,8 @@ env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("test_3dof.urdf")
 env.initOctree()
+
+test_collision(env)
 
 time.sleep(5)
 joint_angles = [0.0, 0.0, 0.0]

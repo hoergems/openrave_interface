@@ -120,6 +120,7 @@ endif()
 add_library(openrave_interface SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/sensor_manager.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/collision_manager.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/urdf_loader.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/viewer.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/robot.cpp

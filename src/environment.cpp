@@ -26,6 +26,7 @@ Environment::Environment():
 	viewer_(new shared::RaveViewer()),
 	urdf_loader_(),
 	robot_(nullptr),
+	collision_manager_(nullptr),
 	robot_model_file_(),
 	particle_plot_limit_(50),
 	octree_(nullptr),
@@ -51,6 +52,9 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	//loadSensorsFromXML(sensor_files);
 	sensor_manager_->setEnvironment(env_);
 	setupDefaultObstacleColors_();
+	collision_manager_ = std::make_shared<shared::CollisionManager>();
+	collision_manager_->setEnvironment(env_);
+	collision_manager_->triangulateScene();
 	return environment_setup_;
 }
 
@@ -76,25 +80,13 @@ std::shared_ptr<shared::Robot> Environment::getRobot() {
 	return robot_;
 }
 
+std::shared_ptr<shared::CollisionManager> Environment::getCollisionManager() {
+	return collision_manager_;
+}
+
 void Environment::transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name) {
 	Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
 	sensor_manager_->transformSensor(name, end_effector_transform);
-}
-
-void Environment::triangulateScene() {
-	OpenRAVE::TriMesh trimesh;
-	const std::string s = "";
-	env_->TriangulateScene(trimesh, 
-			               OpenRAVE::EnvironmentBase::SelectionOptions::SO_NoRobots,
-			               s);
-	cout << "triangulated" << endl;
-	for (size_t i = 0; i < trimesh.indices.size(); i++) {
-		cout << "index: " << trimesh.indices[i] << endl;
-	}
-	
-	for (size_t i = 0; i < trimesh.vertices.size(); i++) {
-		cout << "vertice: (" << trimesh.vertices[i].x << ", " << trimesh.vertices[i].y << ", " << trimesh.vertices[i].z << ")" << endl;
-	}
 }
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
@@ -422,6 +414,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 	register_ptr_to_python<std::shared_ptr<fcl::CollisionObject>>();
 	register_ptr_to_python<std::shared_ptr<shared::SensorManager>>();
 	register_ptr_to_python<std::shared_ptr<shared::Robot>>();
+	register_ptr_to_python<std::shared_ptr<shared::CollisionManager>>();
 	
 	class_<Robot>("Robot", init<std::string>())
 	                        .def("getLinkNames", &Robot::getLinkNames)
@@ -459,17 +452,21 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getState", &Robot::getState)
 	;
 	
+	class_<CollisionManager>("CollisionChecker", init<>())				
+				.def("inCollisionDiscrete", &CollisionManager::inCollisionDiscretePy)
+	;
+	
 	
 	class_<Environment, boost::shared_ptr<Environment>>("Environment", init<>())
 		.def("setupEnvironment", &Environment::setupEnvironment)
 		.def("loadSensors", &Environment::loadSensorsFromXML)
 		.def("showViewer", &Environment::showViewer)
 		.def("getSensorManager", &Environment::getSensorManager)
+		.def("getCollisionManager", &Environment::getCollisionManager)
 		.def("loadRobotFromURDF", &Environment::loadRobotFromURDF)
 		.def("getRobot", &Environment::getRobot)
 		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
-		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)
-		.def("triangulateScene", &Environment::triangulateScene)
+		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)		
 		.def("updateRobotValues", &Environment::updateRobotValues)
 		.def("initOctree", &Environment::initOctree)
 		.def("drawBoxes", &Environment::drawBoxes)
