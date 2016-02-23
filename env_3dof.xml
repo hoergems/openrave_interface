@@ -22,7 +22,7 @@
     </Body>
   </KinBody--> 
    
-  <!--KinBody name="obst2">
+  <KinBody name="obst2">
     <Body type="dynamic" name="obst2_link" enable="true">
       <Geom type="box">
         <Translation>7 0.0 0.0</Translation>
@@ -30,19 +30,23 @@
         <transparency>0.9</transparency>
       </Geom>        
     </Body>
-  </KinBody-->
+  </KinBody>
   
   <KinBody name="shelf1" file="ikeashelf.kinbody.xml">
-    <Translation>2.5 0.0 0</Translation>
+    <Translation>6.0 2.0 0</Translation>
     <RotationMat>-1 0 0 0 -1 0 0 0 1</RotationMat>
   </KinBody>
   
-  <!--KinBody file="table_washer.kinbody.xml" name="Destination">
+  <KinBody file="table_washer.kinbody.xml" name="Destination">
     <Translation>4 -1.0164 0.7479</Translation>
-  </KinBody-->
+  </KinBody>
   
-  <!--KinBody file="segway.kinbody.xml">
+  <KinBody file="segway.kinbody.xml">
     <Translation>4.0   3.0819    0.74</Translation>
-  </KinBody-->  
+  </KinBody>
   
+  <!--sensor name="mysensor_blubb" file="/home/hoe01h/LQG_Newt/environment/sensor_BaseLaser2D.xml">
+      <translation>0 1 5</translation>
+      <rotationaxis>1 0 0 45</rotationaxis>
+  </sensor--> 
 </Environment>

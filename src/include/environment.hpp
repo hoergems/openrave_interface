@@ -104,7 +104,7 @@ class Environment {
 	    /**
 	     * Gets the OpenRAVE robot from the environment
 	     */
-	    OpenRAVE::RobotBasePtr getRaveRobot();	    
+	    OpenRAVE::KinBodyPtr getRaveRobot();	    
 	    
 	    /**
 	     * The sensor manager
@@ -148,6 +148,13 @@ class Environment {
 	     * The robot model file
 	     */
 	    std::string robot_model_file_;
+	    
+	    /**
+	     * The name of the robot
+	     */
+	    std::string robot_name_;
+	    
+	    OpenRAVE::KinBodyPtr rave_robot_;
 	    
 	    /**
 	     * The maximum number of particles to plot

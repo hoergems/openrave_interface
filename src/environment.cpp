@@ -28,6 +28,8 @@ Environment::Environment():
 	robot_(nullptr),
 	collision_manager_(nullptr),
 	robot_model_file_(),
+	robot_name_(""),
+	rave_robot_(nullptr),
 	particle_plot_limit_(50),
 	octree_(nullptr),
 	tree_ptr_(nullptr),
@@ -96,7 +98,9 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	}
 	
 	OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_file, env_);
+	rave_robot_ = robot_ptr;
 	env_->Add(robot_ptr, true);	
+	robot_name_ = robot_ptr->GetName();
 	robot_ = std::make_shared<shared::Robot>(robot_file);
 	robot_model_file_ = robot_file;
 	return true;
@@ -137,13 +141,7 @@ void Environment::drawBoxes() {
 	std::vector<boost::array<double, 6> > tree_boxes = tree_ptr_->toBoxes();
 	std::vector<OpenRAVE::AABB> rave_boxes;
 	OpenRAVE::KinBodyPtr box_kin_body = OpenRAVE::RaveCreateKinBody(env_);
-	for (size_t i = 0; i < tree_boxes.size(); i++) {
-		cout << "x: " << tree_boxes[i][0] << endl;
-		cout << "y: " << tree_boxes[i][1] << endl;
-		cout << "z: " << tree_boxes[i][2] << endl;		
-		cout << "size: " << tree_boxes[i][3] << endl;
-		cout << "c: " << tree_boxes[i][4] << endl;
-		cout << "t: " << tree_boxes[i][5] << endl;
+	for (size_t i = 0; i < tree_boxes.size(); i++) {		
 		OpenRAVE::Vector trans(tree_boxes[i][0], 
 				               tree_boxes[i][1],
 				               tree_boxes[i][2]);
@@ -158,8 +156,7 @@ void Environment::drawBoxes() {
 	box_kin_body->SetName(box_name);    
 	box_kin_body->InitFromBoxes(const_rave_boxes, true);
 	box_kin_body->Enable(false); 
-	env_->Add(box_kin_body, true);
-	cout << "tree depth: " << octree_->getTreeDepth() << endl;
+	env_->Add(box_kin_body, true);	
 }
 
 void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
@@ -273,10 +270,10 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 		                            std::vector<double> &current_joint_velocities,
 								    std::vector<std::vector<double>> &particle_joint_values,
 									std::vector<std::vector<double>> &particle_colors) {	
-	OpenRAVE::RobotBasePtr robot_to_use = getRaveRobot();	
+	OpenRAVE::KinBodyPtr robot_to_use = getRaveRobot();	
 	std::vector<OpenRAVE::KinBodyPtr> bodies;
 	env_->GetBodies(bodies);
-	std::string particle_string = "particle";
+	std::string particle_string = "particle";	
 		
 	// Remove the particle bodies from the scene	
 	for (auto &body: bodies) {		
@@ -316,7 +313,7 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 	}
 	
 	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());	
-	newJointValues.push_back(0);	
+	//newJointValues.push_back(0);	
 	robot_to_use->SetDOFValues(newJointValues);
 	size_t num_plot = particle_plot_limit_;	
 	if (particle_joint_values.size() < num_plot) {
@@ -356,15 +353,8 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 	}
 }
 
-OpenRAVE::RobotBasePtr Environment::getRaveRobot() {
-    std::vector<OpenRAVE::KinBodyPtr> bodies;
-    env_->GetBodies(bodies);
-    for (auto &body: bodies) {    	
-    	if (body->GetLinks().size() >1) {
-    		OpenRAVE::RobotBasePtr robot = boost::static_pointer_cast<OpenRAVE::RobotBase>(body);
-    		return robot;
-    	}    	
-    }   
+OpenRAVE::KinBodyPtr Environment::getRaveRobot() {
+    return rave_robot_;  
 }
 
 void Environment::getGoalArea(std::vector<double> &goal_area) {

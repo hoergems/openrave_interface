@@ -59,7 +59,7 @@ env.getSensorManager()
 env.loadRobotFromURDF("test_3dof.urdf")
 env.initOctree()
 
-test_collision(env)
+#test_collision(env)
 
 time.sleep(5)
 joint_angles = [0.0, 0.0, 0.0]

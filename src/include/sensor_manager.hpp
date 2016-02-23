@@ -64,8 +64,7 @@ class SensorManager {
 	    
 	    /**
 	     * The external sensors
-	     */   
-	    //std::map<unsigned int, std::pair<OpenRAVE:SensorBase::SensorType, std::string>> mymap;	   
+	     */
 	    std::map<std::string, std::pair<OpenRAVE::SensorBase::SensorType, OpenRAVE::SensorBasePtr> > sensor_map_;
 	    
 	    std::map<std::string, OpenRAVE::SensorBase::SensorDataConstPtr> latest_sensor_readings_;
@@ -90,25 +89,8 @@ struct sensor_callback {
 		if (sensor_data->__stamp > last_stamp) {
 			last_stamp = sensor_data->__stamp;
 			LaserSensorDataConstPtr laser_data = 
-					boost::static_pointer_cast<OpenRAVE::SensorBase::LaserSensorData const>(sensor_data);
-			cout << "HELLO" << endl;
-			manager->setLatestSensorData(laser_data);
-			/**for (size_t i = 0; i < laser_data->ranges.size(); i++) {
-				cout << "len positions: " << laser_data->positions.size() << endl;;
-				cout << "len ranges: " << laser_data->ranges.size() << endl;
-				cout << "range " << i << "(" <<
-						laser_data->ranges[i].x << ", " <<
-						laser_data->ranges[i].y << ", " <<
-						laser_data->ranges[i].z << ", " <<
-						laser_data->ranges[i].w << ")" << endl;
-				cout << "position " << i << "(" <<
-						laser_data->positions[0].x << ", " <<
-						laser_data->positions[0].y << ", " <<
-						laser_data->positions[0].z << ", " <<
-						laser_data->positions[0].w << ")" << endl;
-				
-				
-			}*/
+					boost::static_pointer_cast<OpenRAVE::SensorBase::LaserSensorData const>(sensor_data);			
+			manager->setLatestSensorData(laser_data);			
 		}
 		
 	}

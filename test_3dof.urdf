@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name="myrobot">
     <link name="world">
-      <visual>
+      <!--visual>
         <origin rpy="0 0 0" xyz="0.0 0 0"/>
         <geometry>
           <box size="0.25 0.25 1"/>
@@ -9,7 +9,7 @@
         <material name="red">
           <color rgba=".9 .1 .1 1"/>
         </material>
-    </visual>
+    </visual-->
     </link>    
 
     <link name="link1">
