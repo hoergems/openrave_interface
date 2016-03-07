@@ -208,18 +208,7 @@ struct Joint {
     	                            const std::vector<double> &current_joint_velocities,
     	    					    const std::vector<std::vector<double>> &particle_joint_values,
     	    					    const std::vector<std::vector<double>> &particle_colors);
-    	        	    
-    	        	    
-    	    /**
-    	      * Add particles to the viewer which remain when the viewer is updated
-    	    */
-    	    void addPermanentViewerParticles(const std::vector<std::vector<double>> &particle_joint_values,
-    	    							     const std::vector<std::vector<double>> &particle_colors);
-    	        	    
-    	    /**
-    	      * Removes any permanent particles
-    	      */
-    	    void removePermanentViewerParticles();
+    	   
     	        	    
     	    void setupViewer(std::string model_file, std::string environment_file);
     	    

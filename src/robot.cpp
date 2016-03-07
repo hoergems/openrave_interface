@@ -582,18 +582,6 @@ void Robot::setupViewer(std::string model_file, std::string environment_file) {
 	viewer_->setupViewer(model_file, environment_file);	
 }
 
-void Robot::addPermanentViewerParticles(const std::vector<std::vector<double>> &particle_joint_values,
-							            const std::vector<std::vector<double>> &particle_colors) {
-	assert(particle_joint_values.size() == particle_colors.size() &&  
-		   "Number of particles must be the same as number of colours!");
-	viewer_->addPermanentParticles(particle_joint_values,
-			                       particle_colors);	
-}
-
-void Robot::removePermanentViewerParticles() {
-	viewer_->removePermanentParticles();
-}
-
 void Robot::setParticlePlotLimit(unsigned int particle_plot_limit) {
 	viewer_->setParticlePlotLimit(particle_plot_limit);
 }

@@ -26,10 +26,14 @@ Environment::Environment():
 	viewer_(new shared::RaveViewer()),
 	urdf_loader_(),
 	robot_(nullptr),
+	collision_manager_(nullptr),
 	robot_model_file_(),
+	robot_name_(""),
+	rave_robot_(nullptr),
 	particle_plot_limit_(50),
 	octree_(nullptr),
-	tree_ptr_(nullptr)
+	tree_ptr_(nullptr),
+	kin_bodies_default_color_()
 {
 	
 }
@@ -49,6 +53,10 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	environment_setup_ = true;
 	//loadSensorsFromXML(sensor_files);
 	sensor_manager_->setEnvironment(env_);
+	setupDefaultObstacleColors_();
+	collision_manager_ = std::make_shared<shared::CollisionManager>();
+	collision_manager_->setEnvironment(env_);
+	collision_manager_->triangulateScene();
 	return environment_setup_;
 }
 
@@ -74,25 +82,13 @@ std::shared_ptr<shared::Robot> Environment::getRobot() {
 	return robot_;
 }
 
+std::shared_ptr<shared::CollisionManager> Environment::getCollisionManager() {
+	return collision_manager_;
+}
+
 void Environment::transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name) {
 	Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
 	sensor_manager_->transformSensor(name, end_effector_transform);
-}
-
-void Environment::triangulateScene() {
-	OpenRAVE::TriMesh trimesh;
-	const std::string s = "";
-	env_->TriangulateScene(trimesh, 
-			               OpenRAVE::EnvironmentBase::SelectionOptions::SO_NoRobots,
-			               s);
-	cout << "triangulated" << endl;
-	for (size_t i = 0; i < trimesh.indices.size(); i++) {
-		cout << "index: " << trimesh.indices[i] << endl;
-	}
-	
-	for (size_t i = 0; i < trimesh.vertices.size(); i++) {
-		cout << "vertice: (" << trimesh.vertices[i].x << ", " << trimesh.vertices[i].y << ", " << trimesh.vertices[i].z << ")" << endl;
-	}
 }
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
@@ -102,7 +98,9 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	}
 	
 	OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_file, env_);
+	rave_robot_ = robot_ptr;
 	env_->Add(robot_ptr, true);	
+	robot_name_ = robot_ptr->GetName();
 	robot_ = std::make_shared<shared::Robot>(robot_file);
 	robot_model_file_ = robot_file;
 	return true;
@@ -112,6 +110,7 @@ void Environment::initOctree() {
 	// The FCL octree
 	octree_ = boost::make_shared<octomap::OcTree>(0.1);
 	tree_ptr_ = boost::make_shared<fcl::OcTree>(octree_);
+	collision_manager_->setOctree(tree_ptr_);
 }
 
 void Environment::drawBoxes() {	
@@ -130,32 +129,19 @@ void Environment::drawBoxes() {
 								  laser_data->positions[0].z);
 	
  	for (size_t i = 0; i < laser_data->ranges.size() - 1; i++) {
-		if (laser_data->intensity[i] > 0) {			
-			/**Eigen::VectorXd res(4);
-			res[0] = laser_data->positions[0].x + laser_data->ranges[i].x;
-			res[1] = laser_data->positions[0].y + laser_data->ranges[i].y;
-			res[2] = laser_data->positions[0].z + laser_data->ranges[i].z;			
-			const octomap::point3d point(res[0], res[1], res[2]);
-			scan_points.push_back(point);*/
+		if (laser_data->intensity[i] > 0) {
 			const octomap::point3d point(laser_data->positions[0].x + laser_data->ranges[i].x,
 					                     laser_data->positions[0].y + laser_data->ranges[i].y,
 										 laser_data->positions[0].z + laser_data->ranges[i].z);
-			//octree_->updateNode(point, true);
 			scan_points.push_back(point);
 		}
 	}
+ 	
 	octree_->insertScan(scan_points, origin);
-	
 	std::vector<boost::array<double, 6> > tree_boxes = tree_ptr_->toBoxes();
 	std::vector<OpenRAVE::AABB> rave_boxes;
 	OpenRAVE::KinBodyPtr box_kin_body = OpenRAVE::RaveCreateKinBody(env_);
-	for (size_t i = 0; i < tree_boxes.size(); i++) {
-		cout << "x: " << tree_boxes[i][0] << endl;
-		cout << "y: " << tree_boxes[i][1] << endl;
-		cout << "z: " << tree_boxes[i][2] << endl;		
-		cout << "size: " << tree_boxes[i][3] << endl;
-		cout << "c: " << tree_boxes[i][4] << endl;
-		cout << "t: " << tree_boxes[i][5] << endl;
+	for (size_t i = 0; i < tree_boxes.size(); i++) {		
 		OpenRAVE::Vector trans(tree_boxes[i][0], 
 				               tree_boxes[i][1],
 				               tree_boxes[i][2]);
@@ -170,8 +156,7 @@ void Environment::drawBoxes() {
 	box_kin_body->SetName(box_name);    
 	box_kin_body->InitFromBoxes(const_rave_boxes, true);
 	box_kin_body->Enable(false); 
-	env_->Add(box_kin_body, true);
-	cout << "tree depth: " << octree_->getTreeDepth() << endl;
+	env_->Add(box_kin_body, true);	
 }
 
 void Environment::plotPermanentParticles(const std::vector<std::vector<double>> &particle_joint_values,
@@ -210,15 +195,85 @@ void Environment::plotPermanentParticles(const std::vector<std::vector<double>> 
 	}	
 }
 
+void Environment::removePermanentParticles() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+    env_->GetBodies(bodies);
+    // Remove the particle bodies from the scene
+    std::string particle_string = "permanent_";
+    for (auto &body: bodies) {		
+    	if (body->GetName().find(particle_string) != std::string::npos) {			
+    		env_->Remove(body);
+    	}		
+    }
+}
+
+void Environment::setupDefaultObstacleColors_() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+		for (auto &link: links) {
+			const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());
+			std::vector<OpenRAVE::RaveVector<float>> colors;
+			colors.push_back(geometries[0]->GetDiffuseColor());
+			colors.push_back(geometries[0]->GetAmbientColor());
+			kin_bodies_default_color_[body->GetName()] = colors;	
+		}		
+	}
+}
+
+void Environment::setKinBodiesDefaultColor() {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+		for (auto &link: links) {			
+			const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());			
+			std::vector<OpenRAVE::RaveVector<float>> colors = kin_bodies_default_color_[body->GetName()];
+			if (colors.size() > 0) {
+			    geometries[0]->SetDiffuseColor(kin_bodies_default_color_[body->GetName()][0]);
+			    geometries[0]->SetAmbientColor(kin_bodies_default_color_[body->GetName()][1]);
+			}
+		}
+	}
+}
+
+void Environment::setObstacleColor(std::string &obstacle_name, 
+ 		                               std::vector<double> &diffuse_color,
+ 		                               std::vector<double> &ambient_color) {
+ 	std::vector<OpenRAVE::KinBodyPtr> bodies;
+    env_->GetBodies(bodies);
+     for (auto &body: bodies) {    	
+     	const std::vector<OpenRAVE::KinBody::LinkPtr> links(body->GetLinks());
+     	for (auto &link: links) {
+     		const std::vector<OpenRAVE::KinBody::Link::GeometryPtr> geometries(link->GetGeometries());
+     		for (auto &geom: geometries) {
+     			if (body->GetName().find(obstacle_name) != std::string::npos) {
+     				const OpenRAVE::RaveVector<float> d_color(diffuse_color[0],
+     						                                  diffuse_color[1],
+     						                                  diffuse_color[2],
+     						                                  diffuse_color[3]);
+     				const OpenRAVE::RaveVector<float> a_color(ambient_color[0],
+     				    						              ambient_color[1],
+     				    						              ambient_color[2],
+     				    						              ambient_color[3]);     				
+     				geom->SetDiffuseColor(d_color);
+     				geom->SetAmbientColor(a_color);
+     						                                        		
+     			}
+     		}		
+     	}
+    }
+}
+
 void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 		                            std::vector<double> &current_joint_velocities,
 								    std::vector<std::vector<double>> &particle_joint_values,
 									std::vector<std::vector<double>> &particle_colors) {	
-	OpenRAVE::RobotBasePtr robot_to_use = getRaveRobot();
-	
+	OpenRAVE::KinBodyPtr robot_to_use = getRaveRobot();	
 	std::vector<OpenRAVE::KinBodyPtr> bodies;
 	env_->GetBodies(bodies);
-	std::string particle_string = "particle";
+	std::string particle_string = "particle";	
 		
 	// Remove the particle bodies from the scene	
 	for (auto &body: bodies) {		
@@ -255,14 +310,16 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 		else {
 			newJointValues.push_back(current_joint_values[i]);
 		}
-	}	
+	}
+	
 	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());	
-	newJointValues.push_back(0);	
+	//newJointValues.push_back(0);	
 	robot_to_use->SetDOFValues(newJointValues);
 	size_t num_plot = particle_plot_limit_;	
 	if (particle_joint_values.size() < num_plot) {
 		num_plot = particle_joint_values.size();
 	}
+	
 	
 	// Here we plot non-permanent particles
 	for (size_t i = 0; i < num_plot; i++) {
@@ -296,15 +353,22 @@ void Environment::updateRobotValues(std::vector<double> &current_joint_values,
 	}
 }
 
-OpenRAVE::RobotBasePtr Environment::getRaveRobot() {
-    std::vector<OpenRAVE::KinBodyPtr> bodies;
-    env_->GetBodies(bodies);
-    for (auto &body: bodies) {
-    	if (body->GetName() == "myrobot") {
-    		OpenRAVE::RobotBasePtr robot = boost::static_pointer_cast<OpenRAVE::RobotBase>(body);
-    		return robot;
-    	}    	
-    }   
+OpenRAVE::KinBodyPtr Environment::getRaveRobot() {
+    return rave_robot_;  
+}
+
+void Environment::getGoalArea(std::vector<double> &goal_area) {
+	std::vector<OpenRAVE::KinBodyPtr> bodies;
+	env_->GetBodies(bodies);
+	for (auto &body: bodies) {
+		cout << "body name: " << body->GetName() << endl;
+		if (body->GetName() == "GoalArea") {
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.x);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.y);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetTransform().trans.z);
+			goal_area.push_back(body->GetLinks()[0]->GetGeometries()[0]->GetSphereRadius());
+		}
+	}
 }
 
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
@@ -341,6 +405,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 	register_ptr_to_python<std::shared_ptr<fcl::CollisionObject>>();
 	register_ptr_to_python<std::shared_ptr<shared::SensorManager>>();
 	register_ptr_to_python<std::shared_ptr<shared::Robot>>();
+	register_ptr_to_python<std::shared_ptr<shared::CollisionManager>>();
 	
 	class_<Robot>("Robot", init<std::string>())
 	                        .def("getLinkNames", &Robot::getLinkNames)
@@ -356,8 +421,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getJointDamping", &Robot::getJointDamping)
 	                        .def("getJointOrigin", &Robot::getJointOrigin)
 	                        .def("getJointAxis", &Robot::getJointAxis)
-	                        .def("propagate", &Robot::propagate)
-	                        //.def("createRobotCollisionStructures", &Robot::createRobotCollisionStructuresPy)
+	                        .def("propagate", &Robot::propagate)	                        
 	                        .def("createRobotCollisionObjects", &Robot::createRobotCollisionObjectsPy)
 							.def("createEndEffectorCollisionObject", &Robot::createEndEffectorCollisionObjectPy)
 	                        .def("getEndEffectorPosition", &Robot::getEndEffectorPosition)
@@ -378,19 +442,32 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getState", &Robot::getState)
 	;
 	
+	class_<CollisionManager>("CollisionChecker", init<>())				
+				.def("inCollisionDiscreteEnvironment", &CollisionManager::inCollisionDiscreteEnvironmentPy)
+				.def("inCollisionContinuousEnvironment", &CollisionManager::inCollisionContinuousEnvironmentPy)
+				.def("inCollisionDiscreteOctree", &CollisionManager::inCollisionDiscreteOctreePy)
+				.def("inCollisionContinuousOctree", &CollisionManager::inCollisionContinuousOctreePy)
+	;
+	
+	
 	class_<Environment, boost::shared_ptr<Environment>>("Environment", init<>())
 		.def("setupEnvironment", &Environment::setupEnvironment)
 		.def("loadSensors", &Environment::loadSensorsFromXML)
 		.def("showViewer", &Environment::showViewer)
 		.def("getSensorManager", &Environment::getSensorManager)
+		.def("getCollisionManager", &Environment::getCollisionManager)
 		.def("loadRobotFromURDF", &Environment::loadRobotFromURDF)
 		.def("getRobot", &Environment::getRobot)
 		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
-		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)
-		.def("triangulateScene", &Environment::triangulateScene)
+		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)		
 		.def("updateRobotValues", &Environment::updateRobotValues)
 		.def("initOctree", &Environment::initOctree)
 		.def("drawBoxes", &Environment::drawBoxes)
+		.def("setKinBodiesDefaultColor", &Environment::setKinBodiesDefaultColor)
+		.def("setObstacleColor", &Environment::setObstacleColor)
+		.def("getGoalArea", &Environment::getGoalArea)
+		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
+		.def("removePermanentParticles", &Environment::removePermanentParticles)
 	;
 	
 }

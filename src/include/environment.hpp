@@ -8,6 +8,7 @@
 #include "viewer.hpp"
 #include "sensor_manager.hpp"
 #include "robot.hpp"
+#include "collision_manager.hpp"
 #include <map>
 #include <tuple>
 #include <fcl/octree.h>
@@ -50,6 +51,11 @@ class Environment {
 	    std::shared_ptr<shared::Robot> getRobot();
 	    
 	    /**
+	     * Get the collision manager
+	     */
+	    std::shared_ptr<shared::CollisionManager> getCollisionManager();
+	    
+	    /**
 	     * Update the robot values in the viewer
 	     */
 	    void updateRobotValues(std::vector<double> &current_joint_values,
@@ -64,32 +70,49 @@ class Environment {
 	    		                    const std::vector<std::vector<double>> &particle_colors);
 	    
 	    /**
+	     * Remove the permanent particles
+	     */
+	    void removePermanentParticles();
+	    
+	    /**
 	     * Transforms a given sensor to the end effector frame
 	     */
 	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
-	    
-	    /**
-	     * Triangulate the scene
-	     */
-	    void triangulateScene();
 	    
 	    /**
 	     * Initializes the Octree
 	     */
 	    void initOctree();
 	    
+	    /**
+	     * Draw the Octree boxes
+	     */
 	    void drawBoxes();
+	    
+	    void setObstacleColor(std::string &obstacle_name, 
+	         		          std::vector<double> &diffuse_color,
+	        		          std::vector<double> &ambient_color);
+	    
+	    /**
+	     * Get the goal area as a vector of doubles (position and radius)
+	     */
+	    void getGoalArea(std::vector<double> &goal_area);
+	    
+	    void setKinBodiesDefaultColor();
 	
     private:
 	    /**
 	     * Gets the OpenRAVE robot from the environment
 	     */
-	    OpenRAVE::RobotBasePtr getRaveRobot();	    
+	    OpenRAVE::KinBodyPtr getRaveRobot();	    
 	    
 	    /**
 	     * The sensor manager
 	     */
 	    std::shared_ptr<SensorManager> sensor_manager_;
+	    
+	    
+	    void setupDefaultObstacleColors_();
 	    
 	    /**
 	     * Determines of the environment has been set up
@@ -117,18 +140,38 @@ class Environment {
 	    std::shared_ptr<shared::Robot> robot_;
 	    
 	    /**
+	     * The collision manager
+	     */
+	    std::shared_ptr<shared::CollisionManager> collision_manager_;
+	    
+	    /**
 	     * The robot model file
 	     */
 	    std::string robot_model_file_;
+	    
+	    /**
+	     * The name of the robot
+	     */
+	    std::string robot_name_;
+	    
+	    OpenRAVE::KinBodyPtr rave_robot_;
 	    
 	    /**
 	     * The maximum number of particles to plot
 	     */
 	    unsigned int particle_plot_limit_;
 	    
+	    /**
+	     * The Octree which is built from sensor scans
+	     */
 	    boost::shared_ptr<octomap::OcTree> octree_;
 	    
+	    /**
+	     * The FCL Octree collision geometry
+	     */
 	    boost::shared_ptr<fcl::OcTree> tree_ptr_;
+	    
+	    std::map<std::string, std::vector<OpenRAVE::RaveVector<float>>> kin_bodies_default_color_;
 	
 };
 
