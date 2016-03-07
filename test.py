@@ -25,6 +25,46 @@ def test_collision(env):
         print in_collision
     time.sleep(100)
     
+def propagate(env):
+    current_state = v_double()
+    control_input = v_double()
+    control_error = v_double()
+    simulation_step_size = 0.001
+    duration = 0.03
+    result = v_double()
+    
+    robot_dof_values = v_double()
+    env.getRobotDOFValues(robot_dof_values)
+    print "len robot_dof_values " + str(len(robot_dof_values))
+    
+    current_state[:] = [0.0 for i in xrange(len(robot_dof_values) * 2)]
+    control_input[:] = [0.0 for i in xrange(len(robot_dof_values))]
+    control_error[:] = [0.0 for i in xrange(len(robot_dof_values))]   
+    robot = env.getRobot()  
+    
+    robot_dof_values_vec = [robot_dof_values[i] for i in xrange(len(robot_dof_values))]
+    robot_dof_values_vec[18] = 5.0
+    robot_dof_values[:] = robot_dof_values_vec
+    env.setRobotDOFValues(robot_dof_values)
+    time.sleep(5)
+    while True:
+        print "propagating"
+        robot.propagate(current_state,
+                        control_input,
+                        control_error,
+                        simulation_step_size,
+                        duration,
+                        result)
+        result_vec = [result[i] for i in xrange(len(result))]
+        
+        robot_dof_values[:] = [result[i] for i in xrange(len(result) / 2)]
+        env.setRobotDOFValues(robot_dof_values)
+        
+        current_state[:] = [result[i] for i in xrange(len(result))]
+        print "result_vec " + str(result_vec)
+        print "propagated"
+        time.sleep(1.0)
+                
 
 def prog(joint_angles, sensor_name):
     joint_angles_v = v_double()
@@ -57,13 +97,17 @@ env.loadSensors(sensors)
 env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("model/hexapod.urdf")
+
+env.getRobot().setGravityConstant(9.81)
+
 env.initOctree()
-time.sleep(3)
 robot_dof_values = v_double()
 env.getRobotDOFValues(robot_dof_values)
 robot_dof_values_arr = [robot_dof_values[i] for i in xrange(len(robot_dof_values))]
-new_robot_dof_values = v_double()
-robot_dof_values_arr[1] = -0.5
+propagate(env)
+
+time.sleep(100)
+
 new_robot_dof_values[:] = robot_dof_values_arr
 env.setRobotDOFValues(new_robot_dof_values)
 time.sleep(3)
