@@ -381,6 +381,36 @@ void Environment::setRobotDOFValues(std::vector<double> &dof_values) {
 	robot->SetDOFValues(dof_values);
 }
 
+void Environment::setRobotTransform(std::vector<double> &trans,
+	    		                    std::vector<double> &rot) {
+	/**
+	 * rot is RPY angles
+	 */
+	OpenRAVE::KinBodyPtr robot = getRaveRobot();
+	Eigen::Matrix3d roll(3, 3);
+	Eigen::Matrix3d pitch(3, 3);
+	Eigen::Matrix3d yaw(3, 3);
+	roll << 1.0, 0.0, 0.0,
+			0.0, cos(rot[0]), -sin(rot[0]),
+			0.0, sin(rot[0]), cos(rot[0]);
+	pitch << cos(rot[1]), 0, sin(rot[1]),
+			 0.0, 1.0, 0.0,
+			 -sin(rot[1]), 0, cos(rot[1]);
+	yaw << cos(rot[2]), -sin(rot[2]), 0,
+		   sin(rot[2]), cos(rot[2]), 0,
+		   0, 0, 1;
+	
+	Eigen::Matrix3d rot_matrix = roll * pitch * yaw;
+	Eigen::Quaternion<double> quat(rot_matrix);
+	OpenRAVE::geometry::RaveVector<double> rot_vec(quat.w(), quat.x(), quat.y(), quat.z());
+	OpenRAVE::Vector new_trans(trans[0],
+			                   trans[1],
+							   trans[2]);
+	OpenRAVE::Transform robot_transform(rot_vec, new_trans);
+			
+	robot->SetTransform(robot_transform);
+}
+
 
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
 	using namespace boost::python;
@@ -481,6 +511,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("removePermanentParticles", &Environment::removePermanentParticles)
 		.def("getRobotDOFValues", &Environment::getRobotDOFValues)
 		.def("setRobotDOFValues", &Environment::setRobotDOFValues)
+		.def("setRobotTransform", &Environment::setRobotTransform)
 	;
 	
 }

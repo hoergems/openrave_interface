@@ -66,8 +66,13 @@ new_robot_dof_values = v_double()
 robot_dof_values_arr[1] = -0.5
 new_robot_dof_values[:] = robot_dof_values_arr
 env.setRobotDOFValues(new_robot_dof_values)
-print "dof_values " + str(robot_dof_values_arr)
-print "len " + str(len(robot_dof_values_arr))
+time.sleep(3)
+robot_trans = v_double()
+robot_rot = v_double()
+robot_trans[:] = [0.0, 0.0, 0.0]
+robot_rot[:] = [0.4, 0.4, 0.4]
+env.setRobotTransform(robot_trans, robot_rot)
+time.sleep(3)
 env.transformSensorToSensorLink(sensor_name)
 print "activate"
 env.getSensorManager().activateSensor(sensor_name)

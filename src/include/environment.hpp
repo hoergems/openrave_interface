@@ -103,6 +103,9 @@ class Environment {
 	    void getRobotDOFValues(std::vector<double> &dof_values);
 	    
 	    void setRobotDOFValues(std::vector<double> &dof_values);
+	    
+	    void setRobotTransform(std::vector<double> &trans,
+	    		               std::vector<double> &rot);
 	
     private:
 	    /**

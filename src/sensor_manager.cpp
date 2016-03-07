@@ -86,14 +86,18 @@ bool SensorManager::transformSensor(std::string &robot_name, std::string &sensor
 	OpenRAVE::Vector new_trans(sensor_link_transform.trans.x + 0.001,
 			                   sensor_link_transform.trans.y,
 							   sensor_link_transform.trans.z);
-	Eigen::Matrix3d rot1;    
-		
-	double angle = M_PI / 2.0;
+	Eigen::Quaternion<double> quat1(sensor_link_transform.rot.w,
+			                        sensor_link_transform.rot.x,
+									sensor_link_transform.rot.y,
+									sensor_link_transform.rot.z);	
+	Eigen::Matrix3d rot1;
+	double angle = -M_PI / 2.0;
 	rot1 << cos(angle), 0.0, sin(angle), 
 			0.0, 1.0, 0.0,
 			-sin(angle), 0.0, cos(angle);
-	Eigen::Quaternion<double> quat(rot1);
-	OpenRAVE::geometry::RaveVector<double> rot(quat.w(), quat.x(), quat.y(), quat.z());
+	Eigen::Quaternion<double> quat2(rot1);
+	Eigen::Quaternion<double> quatres = quat2 * quat1;
+    OpenRAVE::geometry::RaveVector<double> rot(quatres.x(), quatres.y(), quatres.z(), quatres.w());
 	OpenRAVE::Transform sensor_link_transform_rot(rot, new_trans);
 	sensor_map_[sensor_name].second->SetTransform(sensor_link_transform_rot);	
 	return true;
