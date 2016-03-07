@@ -58,14 +58,9 @@ env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("test_3dof.urdf")
 env.initOctree()
-<<<<<<< HEAD
-time.sleep(10)
 print "activate"
 env.getSensorManager().activateSensor(sensor_name)
-=======
 
-#test_collision(env)
->>>>>>> 69ad5ce209961ef418b014a1250ccf8a24e65368
 
 time.sleep(5)
 joint_angles = [0.0, 0.0, 0.0]
