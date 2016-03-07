@@ -77,7 +77,7 @@ class Environment {
 	    /**
 	     * Transforms a given sensor to the end effector frame
 	     */
-	    void transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name);
+	    void transformSensorToSensorLink(std::string sensor_name);
 	    
 	    /**
 	     * Initializes the Octree
@@ -99,6 +99,10 @@ class Environment {
 	    void getGoalArea(std::vector<double> &goal_area);
 	    
 	    void setKinBodiesDefaultColor();
+	    
+	    void getRobotDOFValues(std::vector<double> &dof_values);
+	    
+	    void setRobotDOFValues(std::vector<double> &dof_values);
 	
     private:
 	    /**

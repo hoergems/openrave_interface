@@ -74,32 +74,28 @@ bool SensorManager::disableSensor(std::string name) {
 	return true;
 }
 
-bool SensorManager::transformSensor(std::string &name, Eigen::MatrixXd &transform) {
-	if (sensor_map_.find(name) == sensor_map_.end()) {
-		cout << "SensorManager: Error: sensor " << name << " doesn't exist" << endl;
+bool SensorManager::transformSensor(std::string &robot_name, std::string &sensor_name) {
+	if (sensor_map_.find(sensor_name) == sensor_map_.end()) {
+		cout << "SensorManager: Error: sensor " << sensor_name << " doesn't exist" << endl;
 		return false;
 	}
-	if (name == "FlashLidar3D") {
-		Eigen::MatrixXd rot1(4, 4);
-		double angle = M_PI / 2.0;
-		rot1 << cos(angle), 0.0, sin(angle), 0.0,
-				0.0, 1.0, 0.0, 0.0,
-				-sin(angle), 0.0, cos(angle), 0.0,
-				0.0, 0.0, 0.0, 1.0;
-		transform = transform * rot1;
-	}
-	
-	Eigen::Matrix3d mat;
-	mat << transform(0, 0), transform(0, 1), transform(0, 2),
-		   transform(1, 0), transform(1, 1), transform(1, 2),
-		   transform(2, 0), transform(2, 1), transform(2, 2);
-	Eigen::Quaternion<double> quat(mat);
+		
+	OpenRAVE::KinBodyPtr robot_kin_body = env_->GetKinBody(robot_name);	
+	OpenRAVE::KinBody::LinkPtr sensor_link = robot_kin_body->GetLink("sensor_link");
+	OpenRAVE::Transform sensor_link_transform = sensor_link->GetTransform();
+	OpenRAVE::Vector new_trans(sensor_link_transform.trans.x + 0.001,
+			                   sensor_link_transform.trans.y,
+							   sensor_link_transform.trans.z);
+	Eigen::Matrix3d rot1;    
+		
+	double angle = M_PI / 2.0;
+	rot1 << cos(angle), 0.0, sin(angle), 
+			0.0, 1.0, 0.0,
+			-sin(angle), 0.0, cos(angle);
+	Eigen::Quaternion<double> quat(rot1);
 	OpenRAVE::geometry::RaveVector<double> rot(quat.w(), quat.x(), quat.y(), quat.z());
-	OpenRAVE::geometry::RaveVector<double> trans(transform(0, 3) + 0.001, 
-				                                 transform(1, 3),
-											     transform(2, 3));
-	const OpenRAVE::Transform sensor_trans(rot, trans);
-	sensor_map_[name].second->SetTransform(sensor_trans);
+	OpenRAVE::Transform sensor_link_transform_rot(rot, new_trans);
+	sensor_map_[sensor_name].second->SetTransform(sensor_link_transform_rot);	
 	return true;
 }
 
@@ -116,8 +112,7 @@ void SensorManager::register_callback_(const std::string &sensor_name,
 	    		                       OpenRAVE::SensorBase::SensorType sensor_type) {
 	boost::function<void(OpenRAVE::SensorBase::SensorDataConstPtr, shared::SensorManager*)> f;
 	shared::sensor_callback sc;
-	sc.type = sensor_type;
-	//f = &sc;
+	sc.type = sensor_type;	
 	f = sc;
 	data_callbacks_[sensor_name] = f;
 }

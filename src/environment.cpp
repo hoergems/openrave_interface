@@ -86,9 +86,9 @@ std::shared_ptr<shared::CollisionManager> Environment::getCollisionManager() {
 	return collision_manager_;
 }
 
-void Environment::transformSensorToEndEffector(const std::vector<double> &joint_angles, std::string name) {
-	Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
-	sensor_manager_->transformSensor(name, end_effector_transform);
+void Environment::transformSensorToSensorLink(std::string sensor_name) {
+	//Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
+	sensor_manager_->transformSensor(robot_name_, sensor_name);
 }
 
 bool Environment::loadRobotFromURDF(std::string robot_file) {
@@ -371,6 +371,17 @@ void Environment::getGoalArea(std::vector<double> &goal_area) {
 	}
 }
 
+void Environment::getRobotDOFValues(std::vector<double> &dof_values) {
+	OpenRAVE::KinBodyPtr robot = getRaveRobot();
+	robot->GetDOFValues(dof_values);
+}
+
+void Environment::setRobotDOFValues(std::vector<double> &dof_values) {
+	OpenRAVE::KinBodyPtr robot = getRaveRobot();
+	robot->SetDOFValues(dof_values);
+}
+
+
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
 	using namespace boost::python;
 	
@@ -459,7 +470,7 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("loadRobotFromURDF", &Environment::loadRobotFromURDF)
 		.def("getRobot", &Environment::getRobot)
 		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
-		.def("transformSensorToEndEffector", &Environment::transformSensorToEndEffector)		
+		.def("transformSensorToSensorLink", &Environment::transformSensorToSensorLink)		
 		.def("updateRobotValues", &Environment::updateRobotValues)
 		.def("initOctree", &Environment::initOctree)
 		.def("drawBoxes", &Environment::drawBoxes)
@@ -468,6 +479,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("getGoalArea", &Environment::getGoalArea)
 		.def("plotPermanentParticles", &Environment::plotPermanentParticles)
 		.def("removePermanentParticles", &Environment::removePermanentParticles)
+		.def("getRobotDOFValues", &Environment::getRobotDOFValues)
+		.def("setRobotDOFValues", &Environment::setRobotDOFValues)
 	;
 	
 }

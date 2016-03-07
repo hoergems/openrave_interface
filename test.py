@@ -33,7 +33,7 @@ def prog(joint_angles, sensor_name):
     joint_angles_v[:] = [joint_angles[i] for i in xrange(len(joint_angles))]
     joint_velocities[:] = [0.0, 0.0, 0.0]
     env.getRobot().setState(joint_angles_v, joint_velocities)
-    env.transformSensorToEndEffector(joint_angles_v, sensor_name)
+    env.transformSensorSensorLink(joint_angles_v, sensor_name)
     env.updateRobotValues(joint_angles_v, 
                           joint_angles_v,
                           particle_joint_values,
@@ -56,13 +56,24 @@ sensors[:] = [sensor_file]
 env.loadSensors(sensors)
 env.showViewer()
 env.getSensorManager()
-env.loadRobotFromURDF("test_3dof.urdf")
+env.loadRobotFromURDF("model/hexapod.urdf")
 env.initOctree()
+time.sleep(3)
+robot_dof_values = v_double()
+env.getRobotDOFValues(robot_dof_values)
+robot_dof_values_arr = [robot_dof_values[i] for i in xrange(len(robot_dof_values))]
+new_robot_dof_values = v_double()
+robot_dof_values_arr[1] = -0.5
+new_robot_dof_values[:] = robot_dof_values_arr
+env.setRobotDOFValues(new_robot_dof_values)
+print "dof_values " + str(robot_dof_values_arr)
+print "len " + str(len(robot_dof_values_arr))
+env.transformSensorToSensorLink(sensor_name)
 print "activate"
 env.getSensorManager().activateSensor(sensor_name)
 
 
-time.sleep(5)
+time.sleep(50)
 joint_angles = [0.0, 0.0, 0.0]
 prog(joint_angles, sensor_name)
 joint_angles[0] = 0.1
