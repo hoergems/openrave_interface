@@ -35,7 +35,7 @@ env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("test_3dof.urdf")
 env.initOctree()
-time.sleep(2)
+time.sleep(10)
 print "activate"
 env.getSensorManager().activateSensor(sensor_name)
 
