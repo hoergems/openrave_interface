@@ -380,6 +380,15 @@ Robot::Robot(std::string robot_file):
 	
 }
 
+void Robot::setJointDampings(std::vector<double> &dampings) {
+	joint_dampings_.clear();
+	for (size_t i = 0; i < dampings.size(); i++) {
+		joint_dampings_.push_back(dampings[i]);
+	}
+	
+	rbdl_interface_->setViscous(joint_dampings_);
+}
+
 void Robot::quatFromRPY(double &roll, double &pitch, double &yaw, std::vector<double> &quat) {
 	double phi, the, psi;
 	 
@@ -492,9 +501,7 @@ void Robot::createRobotCollisionObjects(const std::vector<double> &joint_angles,
 								   res(2,0), res(2,1), res(2,2));
 		fcl::Vec3f trans_vec(res(0,3), res(1,3), res(2,3));
 		
-		fcl::Transform3f trans(trans_matrix, trans_vec); 
-		
-		
+		fcl::Transform3f trans(trans_matrix, trans_vec);
 		fcl::AABB link_aabb(fcl::Vec3f(0.0, 
 					        		   -active_link_dimensions_[i][1] / 2.0, 
 				                       -active_link_dimensions_[i][2] / 2.0),

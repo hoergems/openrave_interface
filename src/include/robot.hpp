@@ -164,6 +164,11 @@ struct Joint {
 								  double f_yaw);
     	    
     	    /**
+    	     * Set the joint dampings
+    	     */
+    	    void setJointDampings(std::vector<double> &dampings);
+    	    
+    	    /**
     	     * Set a joint acceleration limit
     	     */
     	    void setAccelerationLimit(double accelerationLimit);

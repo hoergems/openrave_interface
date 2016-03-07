@@ -293,6 +293,13 @@ void URDFLoader::ParseURDF(
       joint_info->_name = joint_ptr->name;
       joint_info->_linkname0 = joint_ptr->parent_link_name;
       joint_info->_linkname1 = joint_ptr->child_link_name;
+      
+      // Add dynamics (damping) here
+      if(joint_ptr->dynamics) {    	  
+    	  std::vector<double> damping_vector({joint_ptr->dynamics->damping});
+    	  joint_info->_mapFloatParameters["damping"] = damping_vector;
+      }
+      
       joint_info->_vanchor = URDFVectorToRaveVector(joint_ptr->parent_to_joint_origin_transform.position);
 
       int const urdf_joint_type = joint_ptr->type;

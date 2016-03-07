@@ -55,14 +55,14 @@ namespace shared {
 		/**
 		 * Check if a robot in motion collides with the environment
 		 */
-		bool inCollisionContinuousEnvironment(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-						                      std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal);
+		bool inCollisionContinuousEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+						                      std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal);
 		
 		/**
 		 * Check if the robot continuously collides with the octree
 		 */
-		bool inCollisionContinuousOctree(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-								         std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal);
+		bool inCollisionContinuousOctree(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+								         std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal);
 		
 		/**
 		 * A python wrapper for inCollisionDiscreteEnvironment
@@ -93,8 +93,8 @@ namespace shared {
 		bool inCollisionDiscrete_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects,
 				                  boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
 		
-		bool inCollisionContinuous_(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-						            std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal,
+		bool inCollisionContinuous_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+						            std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_object_goal,
 						            boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
 		
 		boost::shared_ptr<fcl::BVHModel<fcl::OBBRSS>> env_bvh_model_;

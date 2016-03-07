@@ -37,16 +37,19 @@ def propagate(env):
     env.getRobotDOFValues(robot_dof_values)
     print "len robot_dof_values " + str(len(robot_dof_values))
     
-    current_state[:] = [0.0 for i in xrange(len(robot_dof_values) * 2)]
+    cs = [0.0 for i in xrange(len(robot_dof_values) * 2)]
+    cv = [0.0 for i in xrange(len(robot_dof_values) * 2)]
+    #cv[2] = 0.0
+    current_state[:] = cs
     control_input[:] = [0.0 for i in xrange(len(robot_dof_values))]
     control_error[:] = [0.0 for i in xrange(len(robot_dof_values))]   
-    robot = env.getRobot()  
-    
-    robot_dof_values_vec = [robot_dof_values[i] for i in xrange(len(robot_dof_values))]
-    robot_dof_values_vec[18] = 5.0
-    robot_dof_values[:] = robot_dof_values_vec
+    robot = env.getRobot()    
+   
+    robot_dof_values[:] = cv
     env.setRobotDOFValues(robot_dof_values)
-    time.sleep(5)
+    
+    print "wair"
+   
     while True:
         print "propagating"
         robot.propagate(current_state,
@@ -57,7 +60,13 @@ def propagate(env):
                         result)
         result_vec = [result[i] for i in xrange(len(result))]
         
-        robot_dof_values[:] = [result[i] for i in xrange(len(result) / 2)]
+        #robot_dof_values[:] = [result[i] for i in xrange(len(result) / 2)]
+        print "robot dof values " + str([robot_dof_values[i] for i in xrange(len(robot_dof_values))])
+        t0 = time.time()
+        collides = env.robotCollidesDiscrete(robot_dof_values)
+        t1 = time.time() - t0
+        print "collision check time: " + str(t1)        
+        print "collides: " + str(collides)
         env.setRobotDOFValues(robot_dof_values)
         
         current_state[:] = [result[i] for i in xrange(len(result))]

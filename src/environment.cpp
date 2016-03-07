@@ -30,6 +30,7 @@ Environment::Environment():
 	robot_model_file_(),
 	robot_name_(""),
 	rave_robot_(nullptr),
+	rave_robot_clone_(nullptr),
 	particle_plot_limit_(50),
 	octree_(nullptr),
 	tree_ptr_(nullptr),
@@ -98,11 +99,31 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	}
 	
 	OpenRAVE::KinBodyPtr robot_ptr = urdf_loader_->load(robot_file, env_);
+	OpenRAVE::KinBodyPtr robot_ptr_clone = urdf_loader_->load(robot_file, env_);
+	cout << "loaded" << endl;
 	rave_robot_ = robot_ptr;
+	rave_robot_clone_ = robot_ptr_clone;
 	env_->Add(robot_ptr, true);	
+	env_->Add(rave_robot_clone_, true);
+	env_->Remove(rave_robot_clone_);
 	robot_name_ = robot_ptr->GetName();
 	robot_ = std::make_shared<shared::Robot>(robot_file);
 	robot_model_file_ = robot_file;
+	std::vector<OpenRAVE::KinBody::JointPtr> joints(robot_ptr->GetJoints());
+	std::vector<double> joint_dampings;
+	cout << "joint names: " << endl;
+	for (auto &k: joints) {
+		auto entry = k->GetInfo()._mapFloatParameters.find("damping");
+		if(entry != k->GetInfo()._mapFloatParameters.end()) {
+			std::vector<double> d = entry->second;
+			joint_dampings.push_back(d[0]);
+		}
+		else {
+			joint_dampings.push_back(0);
+		}
+		cout << k->GetName() << ", dof index: " << k->GetDOFIndex() << endl;
+	}
+	robot_->setJointDampings(joint_dampings);
 	return true;
 }
 
@@ -411,6 +432,99 @@ void Environment::setRobotTransform(std::vector<double> &trans,
 	robot->SetTransform(robot_transform);
 }
 
+bool Environment::robotCollidesDiscrete(std::vector<double> &dof_values) {	
+	rave_robot_clone_->SetDOFValues(dof_values);
+	std::vector<OpenRAVE::KinBody::LinkPtr> links = rave_robot_clone_->GetLinks();
+	std::vector<OpenRAVE::AABB> aabbs;
+	for (auto &l: links) {
+		OpenRAVE::AABB aabb = l->ComputeLocalAABB();		
+		aabbs.push_back(aabb);		
+	}
+	
+	std::vector<OpenRAVE::Transform> transforms;
+	rave_robot_clone_->GetLinkTransformations(transforms);
+	
+	std::vector<std::shared_ptr<fcl::CollisionObject>> collision_objects;
+	
+	// Compute the FCL collision objects
+	
+	for (size_t i = 0; i < transforms.size(); i++) {		
+		fcl::Quaternion3f quat(transforms[i].rot.x, transforms[i].rot.y, transforms[i].rot.z, transforms[i].rot.w);
+		fcl::Vec3f trans_vec(transforms[i].trans.x, transforms[i].trans.y, transforms[i].trans.z);
+		
+		fcl::Transform3f trans(quat, trans_vec);
+		fcl::AABB link_aabb(fcl::Vec3f(0, -aabbs[i].extents.y, -aabbs[i].extents.z), 
+				            fcl::Vec3f(2.0 * aabbs[i].extents.x, aabbs[i].extents.y, aabbs[i].extents.z));
+		
+		fcl::Box* box = new fcl::Box();  
+		fcl::Transform3f box_tf;		
+		fcl::constructBox(link_aabb, trans, *box, box_tf);		
+		std::shared_ptr<fcl::CollisionObject> coll_obj = 
+				std::make_shared<fcl::CollisionObject>(boost::shared_ptr<fcl::CollisionGeometry>(box), box_tf);
+		collision_objects.push_back(coll_obj);	
+	}
+	
+	return collision_manager_->inCollisionDiscreteEnvironment(collision_objects);
+}
+
+bool Environment::robotCollidesContinuous(std::vector<double> &dof_values_start,
+		                                  std::vector<double> &dof_values_goal) {
+	rave_robot_clone_->SetDOFValues(dof_values_start);
+	std::vector<OpenRAVE::KinBody::LinkPtr> links = rave_robot_clone_->GetLinks();
+	std::vector<OpenRAVE::AABB> aabbs;
+	for (auto &l: links) {
+		OpenRAVE::AABB aabb = l->ComputeLocalAABB();		
+		aabbs.push_back(aabb);		
+	}
+		
+	std::vector<OpenRAVE::Transform> transforms;
+	rave_robot_clone_->GetLinkTransformations(transforms);
+		
+	std::vector<std::shared_ptr<fcl::CollisionObject>> collision_objects_start;
+		
+	// Compute the FCL collision objects
+		
+	for (size_t i = 0; i < transforms.size(); i++) {		
+		fcl::Quaternion3f quat(transforms[i].rot.x, transforms[i].rot.y, transforms[i].rot.z, transforms[i].rot.w);
+		fcl::Vec3f trans_vec(transforms[i].trans.x, transforms[i].trans.y, transforms[i].trans.z);
+			
+		fcl::Transform3f trans(quat, trans_vec);
+		fcl::AABB link_aabb(fcl::Vec3f(0, -aabbs[i].extents.y, -aabbs[i].extents.z), 
+					            fcl::Vec3f(2.0 * aabbs[i].extents.x, aabbs[i].extents.y, aabbs[i].extents.z));
+			
+		fcl::Box* box = new fcl::Box();  
+		fcl::Transform3f box_tf;		
+		fcl::constructBox(link_aabb, trans, *box, box_tf);		
+		std::shared_ptr<fcl::CollisionObject> coll_obj = 
+				std::make_shared<fcl::CollisionObject>(boost::shared_ptr<fcl::CollisionGeometry>(box), box_tf);
+		collision_objects_start.push_back(coll_obj);	
+	}
+	
+	transforms.clear();
+	rave_robot_clone_->SetDOFValues(dof_values_goal);	
+	rave_robot_clone_->GetLinkTransformations(transforms);
+	std::vector<std::shared_ptr<fcl::CollisionObject>> collision_objects_goal;
+	
+	for (size_t i = 0; i < transforms.size(); i++) {		
+		fcl::Quaternion3f quat(transforms[i].rot.x, transforms[i].rot.y, transforms[i].rot.z, transforms[i].rot.w);
+		fcl::Vec3f trans_vec(transforms[i].trans.x, transforms[i].trans.y, transforms[i].trans.z);
+				
+		fcl::Transform3f trans(quat, trans_vec);
+		fcl::AABB link_aabb(fcl::Vec3f(0, -aabbs[i].extents.y, -aabbs[i].extents.z), 
+						    fcl::Vec3f(2.0 * aabbs[i].extents.x, aabbs[i].extents.y, aabbs[i].extents.z));
+				
+		fcl::Box* box = new fcl::Box();  
+		fcl::Transform3f box_tf;		
+		fcl::constructBox(link_aabb, trans, *box, box_tf);		
+		std::shared_ptr<fcl::CollisionObject> coll_obj = 
+				std::make_shared<fcl::CollisionObject>(boost::shared_ptr<fcl::CollisionGeometry>(box), box_tf);
+		collision_objects_goal.push_back(coll_obj);	
+	}	
+	return collision_manager_->inCollisionContinuousEnvironment(collision_objects_start,
+			                                                    collision_objects_goal);
+	
+}
+
 
 BOOST_PYTHON_MODULE(libopenrave_interface) { 
 	using namespace boost::python;
@@ -512,6 +626,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 		.def("getRobotDOFValues", &Environment::getRobotDOFValues)
 		.def("setRobotDOFValues", &Environment::setRobotDOFValues)
 		.def("setRobotTransform", &Environment::setRobotTransform)
+		.def("robotCollidesDiscrete", &Environment::robotCollidesDiscrete)
+		.def("robotCollidesContinuous", &Environment::robotCollidesContinuous)
 	;
 	
 }

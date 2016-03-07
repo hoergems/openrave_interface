@@ -1,13 +1,26 @@
 <Environment>  
-  <KinBody name="Floor">
-    <Body type="static" name="FloorBody" enable="false">
+  <!--KinBody name="Floor">
+    <Body type="dynamic" name="FloorBody" enable="true">
      <Geom type="box">
-       <Translation>0.0 0.0 -2.0</Translation>
-       <extents>10 10 0.005</extents>
+       <Translation>0.0 0.0 0.0</Translation>
+       <extents>10 10 0.5</extents>
        <diffuseColor>.1 .1 .9</diffuseColor>
      	<ambientColor>0.6 0.6 0.6</ambientColor>
+       <transparency>0.3</transparency>
      </Geom>
    </Body>
+  </KinBody-->
+
+  <KinBody name="Floor">
+    <Body type="dynamic" name="obst2_link" enable="true">
+      <Geom type="box">
+        <Translation>0 0.0 -3</Translation>
+        <extents>10 10 0.5</extents>
+        <diffuseColor>.1 .1 .9</diffuseColor>
+     	<ambientColor>0.6 0.6 0.6</ambientColor>
+        <transparency>0.0</transparency>
+      </Geom>        
+    </Body>
   </KinBody>
   
 
@@ -27,7 +40,7 @@
       <Geom type="box">
         <Translation>7 0.0 0.0</Translation>
         <extents>1.0 1.0 1.0</extents>
-        <transparency>0.9</transparency>
+        <transparency>0.3</transparency>
       </Geom>        
     </Body>
   </KinBody>
@@ -42,7 +55,7 @@
   </KinBody>
   
   <KinBody file="segway.kinbody.xml">
-    <Translation>4.0   3.0819    0.74</Translation>
+    <Translation>0.5 0.47 0.5</Translation>
   </KinBody>
   
   <!--sensor name="mysensor_blubb" file="/home/hoe01h/LQG_Newt/environment/sensor_BaseLaser2D.xml">

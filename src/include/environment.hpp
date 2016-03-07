@@ -13,6 +13,10 @@
 #include <tuple>
 #include <fcl/octree.h>
 #include <fcl/config.h>
+#include "fcl/BV/BV.h" 
+#include "fcl/collision_object.h"
+#include "fcl/shape/geometric_shapes.h"
+#include "fcl/shape/geometric_shapes_utility.h"
 
 namespace shared {
 
@@ -106,6 +110,11 @@ class Environment {
 	    
 	    void setRobotTransform(std::vector<double> &trans,
 	    		               std::vector<double> &rot);
+	    
+	    bool robotCollidesDiscrete(std::vector<double> &dof_values);
+	    
+	    bool robotCollidesContinuous(std::vector<double> &dof_values_start,
+	    		                     std::vector<double> &dof_values_goal);
 	
     private:
 	    /**
@@ -162,6 +171,8 @@ class Environment {
 	    std::string robot_name_;
 	    
 	    OpenRAVE::KinBodyPtr rave_robot_;
+	    
+	    OpenRAVE::KinBodyPtr rave_robot_clone_;
 	    
 	    /**
 	     * The maximum number of particles to plot

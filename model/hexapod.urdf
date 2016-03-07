@@ -4,222 +4,8 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <!-- Revolute-Revolute Manipulator -->
-<robot name="hexapod" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <material name="black">
-    <color rgba="0.0 0.0 0.0 1.0"/>
-  </material>
-  <material name="blue">
-    <color rgba="0.0 0.0 0.8 1.0"/>
-  </material>
-  <material name="green">
-    <color rgba="0.0 0.8 0.0 1.0"/>
-  </material>
-  <material name="grey">
-    <color rgba="0.2 0.2 0.2 1.0"/>
-  </material>
-  <material name="orange">
-    <color rgba="1.0 0.423529411765 0.0392156862745 1.0"/>
-  </material>
-  <material name="brown">
-    <color rgba="0.870588235294 0.811764705882 0.764705882353 1.0"/>
-  </material>
-  <material name="red">
-    <color rgba="0.8 0.0 0.0 1.0"/>
-  </material>
-  <material name="white">
-    <color rgba="1.0 1.0 1.0 1.0"/>
-  </material>
-  <transmission name="tran1">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_left_body_coxa"/>
-    <actuator name="motor1">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran2">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_right_body_coxa"/>
-    <actuator name="motor2">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran3">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_left_coxa_femour"/>
-    <actuator name="motor3">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran4">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_right_coxa_femour"/>
-    <actuator name="motor4">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran5">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_left_femour_tibia"/>
-    <actuator name="motor5">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran6">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="front_right_femour_tibia"/>
-    <actuator name="motor6">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran7">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_left_body_coxa"/>
-    <actuator name="motor7">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran8">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_right_body_coxa"/>
-    <actuator name="motor8">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran9">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_left_coxa_femour"/>
-    <actuator name="motor9">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran10">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_right_coxa_femour"/>
-    <actuator name="motor10">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran11">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_left_femour_tibia"/>
-    <actuator name="motor11">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran12">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="middle_right_femour_tibia"/>
-    <actuator name="motor12">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran13">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_left_body_coxa"/>
-    <actuator name="motor13">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran14">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_right_body_coxa"/>
-    <actuator name="motor14">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran15">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_left_coxa_femour"/>
-    <actuator name="motor15">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran16">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_right_coxa_femour"/>
-    <actuator name="motor16">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran17">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_left_femour_tibia"/>
-    <actuator name="motor17">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <transmission name="tran18">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="rear_right_femour_tibia"/>
-    <actuator name="motor18">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
-  <gazebo>
-    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
-      <robotNamespace>/hexapod</robotNamespace>
-    </plugin>
-  </gazebo>
-  <gazebo reference="base_link">
-    <gravity>true</gravity>
-    <material>Gazebo/White</material>
-  </gazebo>
-  <gazebo reference="front_left_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-  <gazebo reference="front_right_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-  <gazebo reference="middle_left_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-  <gazebo reference="middle_right_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-  <gazebo reference="rear_left_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-  <gazebo reference="rear_right_tibia">
-    <gravity>true</gravity>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
+<robot name="hexapod" xmlns:xacro="http://www.ros.org/wiki/xacro">  
   <link name="world" />
-  
   <link name="base_link">
     <visual>
       <origin xyz="0 0 0"/>
@@ -240,7 +26,7 @@
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="wold_base_link" type="prismatic">
+  <joint name="a0" type="prismatic">
     <parent link="world"/>
     <child link="base_link"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -248,6 +34,8 @@
     <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>    
     <!--dynamics damping="3.0"/-->
   </joint>
+  
+  
   <link name="square">
     <visual>
       <origin xyz="0.0125 0 0"/>

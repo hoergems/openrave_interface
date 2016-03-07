@@ -64,15 +64,7 @@ void CollisionManager::triangulateScene() {
 	env_collision_object_ = boost::make_shared<fcl::CollisionObject>(env_bvh_model_, identity_transform_);	
 }
 
-bool CollisionManager::inCollisionDiscreteEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects) {
-	/**fcl::BroadPhaseCollisionManager* robot_collision_manager = new fcl::DynamicAABBTreeCollisionManager();
-	for (auto &k: robot_collision_objects) {
-		robot_collision_manager->registerObject(k.get());
-	}
-	robot_collision_manager->setup();
-	CollisionData collision_data;
-	obstacle_collision_manager_->collide(robot_collision_manager, &collision_data, shared::defaultCollisionFunction);
-	return collision_data.result.isCollision();*/
+bool CollisionManager::inCollisionDiscreteEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects) {	
 	return inCollisionDiscrete_(robot_collision_objects, env_collision_object_);
 }
 
@@ -80,17 +72,17 @@ bool CollisionManager::inCollisionDiscreteOctree(std::vector<std::shared_ptr<fcl
 	return inCollisionDiscrete_(robot_collision_objects, octree_collision_object_);
 }
 
-bool CollisionManager::inCollisionContinuousEnvironment(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-				                                        std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal) {
-	return inCollisionContinuous_(robot_collision_object_start,
-			                      robot_collision_object_goal,
+bool CollisionManager::inCollisionContinuousEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+				                                        std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal) {
+	return inCollisionContinuous_(robot_collision_objects_start,
+			                      robot_collision_objects_goal,
 			                      env_collision_object_);
 }
 
-bool CollisionManager::inCollisionContinuousOctree(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start, 
-								                   std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal) {
-	return inCollisionContinuous_(robot_collision_object_start,
-			                      robot_collision_object_goal,
+bool CollisionManager::inCollisionContinuousOctree(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+								                   std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal) {
+	return inCollisionContinuous_(robot_collision_objects_start,
+			                      robot_collision_objects_goal,
 			                      octree_collision_object_);
 }
 
@@ -113,22 +105,28 @@ bool CollisionManager::inCollisionDiscrete_(std::vector<std::shared_ptr<fcl::Col
 
 
 
-bool CollisionManager::inCollisionContinuous_(std::shared_ptr<fcl::CollisionObject> &robot_collision_object_start,
-		                                      std::shared_ptr<fcl::CollisionObject> &robot_collision_object_goal,
+bool CollisionManager::inCollisionContinuous_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start,
+		                                      std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal,
 		                                      boost::shared_ptr<fcl::CollisionObject> &eval_collision_object) {
-	fcl::ContinuousCollisionRequest request(10,
-		    		                        0.0001,
-		    		                        fcl::CCDM_LINEAR,
-		    		                        fcl::GST_LIBCCD,
-		    		                        fcl::CCDC_NAIVE);
-	fcl::ContinuousCollisionResult result;    
-	fcl::continuousCollide(robot_collision_object_start.get(), 
-	                       robot_collision_object_goal->getTransform(), 
-	                       eval_collision_object.get(),
-	                       eval_collision_object->getTransform(),
-	                       request,
-	                       result);    
-	return result.is_collide; 
+	for (size_t i = 0; i < robot_collision_objects_start.size(); i++) {
+		fcl::ContinuousCollisionRequest request(10,
+												0.0001,
+												fcl::CCDM_LINEAR,
+												fcl::GST_LIBCCD,
+												fcl::CCDC_NAIVE);
+		fcl::ContinuousCollisionResult result;    
+		fcl::continuousCollide(robot_collision_objects_start[i].get(), 
+							   robot_collision_objects_goal[i]->getTransform(), 
+							   eval_collision_object.get(),
+							   eval_collision_object->getTransform(),
+							   request,
+							   result);
+		if (result.is_collide) {
+			return result.is_collide;
+		}		
+	}
+	
+	return false;
 }
 
 bool CollisionManager::inCollisionDiscreteEnvironmentPy(boost::python::list &ns) {
@@ -142,11 +140,11 @@ bool CollisionManager::inCollisionDiscreteEnvironmentPy(boost::python::list &ns)
 }
 
 bool CollisionManager::inCollisionContinuousEnvironmentPy(boost::python::list &ns) {
-	std::shared_ptr<fcl::CollisionObject> collision_object_start = 
+	/**std::shared_ptr<fcl::CollisionObject> collision_object_start = 
 	    		boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[0]);
 	std::shared_ptr<fcl::CollisionObject> collision_object_goal = 
 	    		boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[1]);    
-	return inCollisionContinuousEnvironment(collision_object_start, collision_object_goal);
+	return inCollisionContinuousEnvironment(collision_object_start, collision_object_goal);*/
 }
 
 bool CollisionManager::inCollisionDiscreteOctreePy(boost::python::list &ns) {
@@ -160,11 +158,11 @@ bool CollisionManager::inCollisionDiscreteOctreePy(boost::python::list &ns) {
 }
 
 bool CollisionManager::inCollisionContinuousOctreePy(boost::python::list &ns) {
-	std::shared_ptr<fcl::CollisionObject> collision_object_start = 
+	/**std::shared_ptr<fcl::CollisionObject> collision_object_start = 
 		    	boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[0]);
 	std::shared_ptr<fcl::CollisionObject> collision_object_goal = 
 		    	boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[1]);    
-	return inCollisionContinuousOctree(collision_object_start, collision_object_goal);
+	return inCollisionContinuousOctree(collision_object_start, collision_object_goal);*/
 }
 
 
