@@ -26,10 +26,10 @@
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="a0" type="prismatic">
+  <joint name="j25" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 0.16"/>
     <axis xyz="0 0 1"/>
     <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>    
     <!--dynamics damping="3.0"/-->
@@ -57,7 +57,7 @@
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>  
-  <joint name="base_link_square" type="fixed">
+  <joint name="k00" type="fixed">
     <parent link="base_link"/>
     <child link="square"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.1205 0 0"/>
@@ -75,7 +75,7 @@
       </geometry>
     </collision>    
   </link>
-  <joint name="square_sensor_link" type="fixed">
+  <joint name="k01" type="fixed">
     <parent link="square"/>
     <child link="sensor_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.025 0 0"/>
@@ -97,17 +97,18 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_left_body_coxa" type="revolute">
+  <joint name="j01" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="front_left_coxa"/>
     <origin rpy="0.0 0.0 0.785398163397" xyz="0.1205 0.0705 0"/>
-    <limit effort="10" lower="-2.4" upper="2.4" velocity="3.14159265359"/>
+    <!--limit effort="10" lower="-2.4" upper="2.4" velocity="3.14159265359"/-->
+    <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>
     <dynamics damping="0.7"/>
   </joint>
   <link name="front_right_coxa">
@@ -127,12 +128,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_right_body_coxa" type="revolute">
+  <joint name="j02" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="front_right_coxa"/>
@@ -157,12 +158,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_left_body_coxa" type="revolute">
+  <joint name="j03" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="middle_left_coxa"/>
@@ -187,12 +188,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_right_body_coxa" type="revolute">
+  <joint name="j04" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="middle_right_coxa"/>
@@ -217,12 +218,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_left_body_coxa" type="revolute">
+  <joint name="j05" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="rear_left_coxa"/>
@@ -247,12 +248,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.03 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_right_body_coxa" type="revolute">
+  <joint name="j06" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="base_link"/>
     <child link="rear_right_coxa"/>
@@ -275,18 +276,19 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_left_coxa_femour" type="revolute">
+  <joint name="j07" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="front_left_coxa"/>
     <child link="front_left_femour"/>
     <origin rpy="1.57079632679489661923 0.0 0.0" xyz="0.06 0 0"/>
-    <limit effort="10" lower="-2.4" upper="2.4" velocity="3.14159265359"/>
-    <dynamics damping="0.7"/>
+    <!--limit effort="10" lower="-2.4" upper="2.4" velocity="3.14159265359"/-->
+    <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>
+    <dynamics damping="0.7" friction="1.0"/>
   </joint>
   <link name="front_right_femour">
     <visual>
@@ -303,12 +305,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_right_coxa_femour" type="revolute">
+  <joint name="j08" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="front_right_coxa"/>
     <child link="front_right_femour"/>
@@ -331,12 +333,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_left_coxa_femour" type="revolute">
+  <joint name="j09" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="middle_left_coxa"/>
     <child link="middle_left_femour"/>
@@ -359,12 +361,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_right_coxa_femour" type="revolute">
+  <joint name="j10" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="middle_right_coxa"/>
     <child link="middle_right_femour"/>
@@ -387,12 +389,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_left_coxa_femour" type="revolute">
+  <joint name="j11" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="rear_left_coxa"/>
     <child link="rear_left_femour"/>
@@ -415,12 +417,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0418 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_right_coxa_femour" type="revolute">
+  <joint name="j12" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="rear_right_coxa"/>
     <child link="rear_right_femour"/>
@@ -443,12 +445,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_left_femour_tibia" type="revolute">
+  <joint name="j13" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="front_left_femour"/>
     <child link="front_left_tibia"/>
@@ -471,12 +473,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="front_right_femour_tibia" type="revolute">
+  <joint name="j14" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="front_right_femour"/>
     <child link="front_right_tibia"/>
@@ -499,12 +501,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_left_femour_tibia" type="revolute">
+  <joint name="j15" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="middle_left_femour"/>
     <child link="middle_left_tibia"/>
@@ -527,12 +529,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="middle_right_femour_tibia" type="revolute">
+  <joint name="j16" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="middle_right_femour"/>
     <child link="middle_right_tibia"/>
@@ -555,12 +557,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_left_femour_tibia" type="revolute">
+  <joint name="j17" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="rear_left_femour"/>
     <child link="rear_left_tibia"/>
@@ -583,12 +585,12 @@
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
       <mass value="0.3"/>
       <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749"/>
     </inertial>
   </link>
-  <joint name="rear_right_femour_tibia" type="revolute">
+  <joint name="j18" type="revolute">
     <axis xyz="0 0 1"/>
     <parent link="rear_right_femour"/>
     <child link="rear_right_tibia"/>
@@ -604,7 +606,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="front_left_tibia_virtual" type="fixed">
+  <joint name="j19" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="front_left_tibia"/>
     <child link="front_left_end_effector"/>
@@ -619,7 +621,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="front_right_tibia_virtual" type="fixed">
+  <joint name="j20" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="front_right_tibia"/>
     <child link="front_right_end_effector"/>
@@ -634,7 +636,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="middle_left_tibia_virtual" type="fixed">
+  <joint name="j21" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="middle_left_tibia"/>
     <child link="middle_left_end_effector"/>
@@ -649,7 +651,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="middle_right_tibia_virtual" type="fixed">
+  <joint name="j22" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="middle_right_tibia"/>
     <child link="middle_right_end_effector"/>
@@ -664,7 +666,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="rear_left_tibia_virtual" type="fixed">
+  <joint name="j23" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="rear_left_tibia"/>
     <child link="rear_left_end_effector"/>
@@ -679,7 +681,7 @@
       </geometry>
     </visual>
   </link>
-  <joint name="rear_right_tibia_virtual" type="fixed">
+  <joint name="j24" type="fixed">
     <axis xyz="0 0 1"/>
     <parent link="rear_right_tibia"/>
     <child link="rear_right_end_effector"/>

@@ -51,6 +51,38 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	cout << "loading " << environment_file << endl;
 	env_->Load(environment_file);	
 	cout << "loaded environment" << endl;
+	
+	//Create a trimesh
+	OpenRAVE::TriMesh trimesh;
+	trimesh.vertices.push_back(OpenRAVE::Vector(0, 0, 3));
+	trimesh.vertices.push_back(OpenRAVE::Vector(1, 0, 3));
+	trimesh.vertices.push_back(OpenRAVE::Vector(0, 2, 0));
+	trimesh.vertices.push_back(OpenRAVE::Vector(-1, -2, 0));
+	trimesh.vertices.push_back(OpenRAVE::Vector(0, -3, 1));
+	trimesh.vertices.push_back(OpenRAVE::Vector(2, -1, 0));
+	trimesh.indices.push_back(0);
+	trimesh.indices.push_back(1);
+	trimesh.indices.push_back(2);
+	trimesh.indices.push_back(0);
+	trimesh.indices.push_back(2);
+	trimesh.indices.push_back(3);
+	trimesh.indices.push_back(0);
+	trimesh.indices.push_back(3);
+	trimesh.indices.push_back(4);
+	trimesh.indices.push_back(0);
+	trimesh.indices.push_back(4);
+	trimesh.indices.push_back(5);
+	//trimesh.indices.push_back(0);
+	//trimesh.indices.push_back(5);
+	//trimesh.indices.push_back(2);
+	
+	OpenRAVE::KinBodyPtr trimesh_kinbody = OpenRAVE::RaveCreateKinBody(env_);
+	cout << "created" << endl;
+	trimesh_kinbody->SetName("trimesh_kinbody");
+	trimesh_kinbody->InitFromTrimesh(trimesh);	
+	env_->Add(trimesh_kinbody);
+	
+	
 	environment_setup_ = true;
 	//loadSensorsFromXML(sensor_files);
 	sensor_manager_->setEnvironment(env_);
@@ -127,9 +159,9 @@ bool Environment::loadRobotFromURDF(std::string robot_file) {
 	return true;
 }
 
-void Environment::initOctree() {
+void Environment::initOctree(double octree_resolution) {
 	// The FCL octree
-	octree_ = boost::make_shared<octomap::OcTree>(0.1);
+	octree_ = boost::make_shared<octomap::OcTree>(octree_resolution);
 	tree_ptr_ = boost::make_shared<fcl::OcTree>(octree_);
 	collision_manager_->setOctree(tree_ptr_);
 }

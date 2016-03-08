@@ -86,7 +86,7 @@ class Environment {
 	    /**
 	     * Initializes the Octree
 	     */
-	    void initOctree();
+	    void initOctree(double octree_resolution);
 	    
 	    /**
 	     * Draw the Octree boxes

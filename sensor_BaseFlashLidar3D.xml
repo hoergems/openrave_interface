@@ -3,8 +3,8 @@
    <!--rotationaxis>0 1 0 90</rotationaxis-->   
    <maxrange>10</maxrange>
    <time_scan>0.02</time_scan>
-   <KK>30 30 30 30</KK>
-   <width>60</width>
-   <height>60</height>
-   <color>1 1 0</color>
+   <KK>40 40 40 40</KK>
+   <width>80</width>
+   <height>80</height>
+   <color>0 1 1</color>
 </sensor>
