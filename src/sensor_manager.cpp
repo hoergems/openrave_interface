@@ -1,4 +1,5 @@
 #include "include/sensor_manager.hpp"
+#include <unistd.h>
 
 using std::cout;
 using std::endl;
@@ -42,17 +43,18 @@ void SensorManager::sensor_loop_() {
 	}
 }
 
-void SensorManager::setLatestSensorData(LaserSensorDataConstPtr &sensor_data) {
-	boost::mutex::scoped_lock scoped_lock(mutex_);
+void SensorManager::setLatestSensorData(LaserSensorDataConstPtr &sensor_data) {	
+	boost::mutex::scoped_lock scoped_lock(mutex_);	
 	latest_sensor_data_ = sensor_data;
 }
 
-void SensorManager::getLatestSensorData(LaserSensorDataConstPtr &sensor_data) {
+void SensorManager::getLatestSensorData(LaserSensorDataConstPtr &sensor_data) {	
 	boost::mutex::scoped_lock scoped_lock(mutex_);
 	sensor_data = latest_sensor_data_;
+	
 }
 
-bool SensorManager::activateSensor(std::string name) {
+bool SensorManager::activateSensor(std::string name, bool wait_for_sensor_data) {
 	if (sensor_map_.find(name) == sensor_map_.end()) {
 		cout << "SensorManager: Error: sensor " << name << " doesn't exist" << endl;
 		return false;
@@ -60,6 +62,14 @@ bool SensorManager::activateSensor(std::string name) {
 	boost::recursive_mutex::scoped_lock scoped_lock(env_->GetMutex());
 	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_PowerOn, true);
 	sensor_map_[name].second->Configure(OpenRAVE::SensorBase::ConfigureCommand::CC_RenderDataOn, true);
+	if (wait_for_sensor_data) {
+		LaserSensorDataConstPtr sensor_data = nullptr;
+		unsigned int microseconds = 1000000;
+		while (!sensor_data) {			
+			getLatestSensorData(sensor_data);
+			usleep(microseconds);
+		}
+	}
 	return true;
 }
 

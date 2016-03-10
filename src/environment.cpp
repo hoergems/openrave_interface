@@ -53,13 +53,13 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	cout << "loaded environment" << endl;
 	
 	//Create a trimesh
-	OpenRAVE::TriMesh trimesh;
-	trimesh.vertices.push_back(OpenRAVE::Vector(0, 0, 3));
-	trimesh.vertices.push_back(OpenRAVE::Vector(1, 0, 3));
+	/**OpenRAVE::TriMesh trimesh;
+	trimesh.vertices.push_back(OpenRAVE::Vector(0, 0, 1.5));
+	trimesh.vertices.push_back(OpenRAVE::Vector(0.5, 0, 1.5));
 	trimesh.vertices.push_back(OpenRAVE::Vector(0, 2, 0));
-	trimesh.vertices.push_back(OpenRAVE::Vector(-1, -2, 0));
-	trimesh.vertices.push_back(OpenRAVE::Vector(0, -3, 1));
-	trimesh.vertices.push_back(OpenRAVE::Vector(2, -1, 0));
+	trimesh.vertices.push_back(OpenRAVE::Vector(-0.5, -1, 0));
+	trimesh.vertices.push_back(OpenRAVE::Vector(0, -1.5, 1));
+	trimesh.vertices.push_back(OpenRAVE::Vector(1, -0.5, 0));
 	trimesh.indices.push_back(0);
 	trimesh.indices.push_back(1);
 	trimesh.indices.push_back(2);
@@ -80,7 +80,7 @@ bool Environment::setupEnvironment(std::string environment_file) {
 	cout << "created" << endl;
 	trimesh_kinbody->SetName("trimesh_kinbody");
 	trimesh_kinbody->InitFromTrimesh(trimesh);	
-	env_->Add(trimesh_kinbody);
+	env_->Add(trimesh_kinbody);*/
 	
 	
 	environment_setup_ = true;
@@ -169,6 +169,10 @@ void Environment::initOctree(double octree_resolution) {
 void Environment::drawBoxes() {	
 	LaserSensorDataConstPtr laser_data; 
 	sensor_manager_->getLatestSensorData(laser_data);
+	if (!laser_data) {
+		cout << "Error: No laser sensor data available" << endl;
+		return;
+	}
 	std::vector<double> robot_state;
 	std::vector<double> joint_angles;
 	robot_->getState(robot_state);

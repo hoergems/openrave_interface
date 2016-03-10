@@ -44,7 +44,7 @@ class SensorManager {
 	    /**
 	     * Activates a sensor
 	     */
-	    bool activateSensor(std::string name);
+	    bool activateSensor(std::string name, bool wait_for_sensor_data);
 	    
 	    void setLatestSensorData(LaserSensorDataConstPtr &sensor_data);
 	    
@@ -85,7 +85,7 @@ struct sensor_callback {
 	OpenRAVE::SensorBase::SensorType type;
 	uint64_t last_stamp = 0;
 	void operator()(OpenRAVE::SensorBase::SensorDataConstPtr &sensor_data,
-			        shared::SensorManager *manager) {
+			        shared::SensorManager *manager) {		
 		if (sensor_data->__stamp > last_stamp) {
 			last_stamp = sensor_data->__stamp;
 			LaserSensorDataConstPtr laser_data = 

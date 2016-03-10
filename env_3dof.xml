@@ -6,10 +6,20 @@
         <extents>10 10 0.001</extents>
         <diffuseColor>.1 .1 .9</diffuseColor>
      	<ambientColor>0.6 0.6 0.6</ambientColor>
-        <transparency>0.4</transparency>
+        <transparency>0.0</transparency>
       </Geom>        
     </Body>
   </KinBody>
+
+  <KinBody name="box3">
+  <Body name="base" type="dynamic" enable="true">
+    <Geom type="box">
+      <extents>0.05 0.05 0.2</extents>
+      <translation>2 0 0.2</translation>
+      <diffusecolor>1 0 0</diffusecolor>
+    </Geom>
+  </Body>
+</KinBody>
   
 
   <!--KinBody name="GoalArea">
@@ -26,29 +36,34 @@
   <KinBody name="obst2">
     <Body type="dynamic" name="obst2_link" enable="true">
       <Geom type="box">
-        <Translation>7 0.0 0.0</Translation>
-        <extents>1.0 1.0 1.0</extents>
-        <transparency>0.3</transparency>
+        <Translation>3.5 0.0 0.0</Translation>
+        <extents>0.5 0.5 1.0</extents>
+        <transparency>0.0</transparency>
       </Geom>        
     </Body>
   </KinBody>
   
   <KinBody name="shelf1" file="ikeashelf.kinbody.xml">
-    <Translation>6.0 2.0 0</Translation>
+    <Translation>2.0 1.0 0</Translation>
     <RotationMat>-1 0 0 0 -1 0 0 0 1</RotationMat>
   </KinBody>
   
-  <KinBody file="table_washer.kinbody.xml" name="Destination">
-    <Translation>4 -1.0164 0.7479</Translation>
+  <KinBody file="table_washer.kinbody.xml" name="table1">
+    <Translation>1.5 -1.0164 0.7479</Translation>
+    <RotationMat>-1 0.8 0 0 -1 0 0 0 1</RotationMat>
+  </KinBody>
+
+  <KinBody file="table_washer.kinbody.xml" name="table2">
+    <Translation>5 1.0164 0.7479</Translation>
   </KinBody>
   
   <KinBody file="segway.kinbody.xml">
-    <Translation>0.5 0.47 0.72</Translation>
+    <Translation>1.5 1.47 0.72</Translation>
   </KinBody>
   
-  <KinBody file="earth.kinbody.xml">
+  <!--KinBody file="earth.kinbody.xml">
     <Translation>0 0 0</Translation>
-  </KinBody>
+  </KinBody-->
   
   
   <!--sensor name="mysensor_blubb" file="/home/hoe01h/LQG_Newt/environment/sensor_BaseLaser2D.xml">

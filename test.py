@@ -65,9 +65,10 @@ def propagate(env, sensor_name):
    
     robot_dof_values[:] = cv
     env.setRobotDOFValues(robot_dof_values)
-    time.sleep(5)
-    env.getSensorManager().activateSensor(sensor_name)
-    time.sleep(2)
+    raw_input("Press Enter to continue...")
+    env.getSensorManager().activateSensor(sensor_name, False)
+    raw_input("Press Enter to continue...")
+    #raw_input("Press Enter to continue...")
     env.drawBoxes()    
     env.getSensorManager().deactivateSensor(sensor_name)
     
@@ -130,9 +131,14 @@ env.showViewer()
 env.getSensorManager()
 env.loadRobotFromURDF("model/hexapod.urdf")
 
+#dof_values = v_double()
+#dof_values[:] = [1.5778636567,-3.28698057487e-06,4.93129297073e-06,-0.028272851672]
+#env.setRobotDOFValues(dof_values)
+#time.sleep(100)
+
 env.getRobot().setGravityConstant(9.81)
 env.transformSensorToSensorLink(sensor_name)
-env.initOctree(0.05)
+env.initOctree(0.1)
 robot_dof_values = v_double()
 env.getRobotDOFValues(robot_dof_values)
 robot_dof_values_arr = [robot_dof_values[i] for i in xrange(len(robot_dof_values))]
