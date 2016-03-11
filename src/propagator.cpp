@@ -72,6 +72,67 @@ bool Propagator::propagate_linear(const std::vector<double> &current_joint_value
 	return true;
 	
 }
+
+bool Propagator::propagate_nonlinear_constraints(const std::vector<double> &current_joint_values,
+	   		                                     const std::vector<double> &current_joint_velocities,
+	   		                                     std::vector<double> &control,
+	   		                                     std::vector<double> &control_error_vec,
+	   		                                     const double simulation_step_size,
+	   		                                     const double duration,
+	   		                                     std::string &body_name,
+	   		                                     std::vector<double> &body_point,
+	   		                             	     std::vector<double> &world_normal,
+	   		                                     std::vector<double> &result) {
+	std::vector<double> state;
+		
+	for (size_t i = 0; i < current_joint_values.size(); i++) {
+		state.push_back(current_joint_values[i]);
+	}
+	for (size_t i = 0; i < current_joint_values.size(); i++) {		
+		state.push_back(current_joint_velocities[i]);		
+	}
+		
+	//std::vector<double> integration_result;
+	std::vector<double> inte_times({0.0, duration, simulation_step_size});	
+	integrator_->do_integration_constraints(state, 
+			                                control, 
+			                                control_error_vec, 
+			                                inte_times,
+			                                body_name,
+			                                body_point, 
+			                                world_normal, 
+			                                result);
+		
+	//Enforce position and velocity limits
+	unsigned int ir_size = result.size() / 2;
+	bool legal = true;
+	if (enforce_constraints_) {		
+		for (unsigned int i = 0; i < ir_size; i++) {
+			if (result[i] < jointsLowerPositionLimit_[i]) {
+				legal = false;	    	
+				result[i] = jointsLowerPositionLimit_[i];
+				result[i + ir_size] = 0;				
+			}
+			else if (result[i] > jointsUpperPositionLimit_[i]) {
+				legal = false;			
+				result[i] = jointsUpperPositionLimit_[i];
+				result[i + ir_size] = 0;
+			}
+		
+			if (result[i + ir_size] < -jointsVelocityLimit_[i]) {
+				result[i + ir_size] = -jointsVelocityLimit_[i];
+				legal = false;
+			}
+			else if (result[i + ir_size] > jointsVelocityLimit_[i]) {
+				result[i + ir_size] = jointsVelocityLimit_[i];
+				legal = false;
+			}		        
+		}
+	}
+		
+	return legal;
+	
+}
 	
 bool Propagator::propagate_nonlinear(const std::vector<double> &current_joint_values,
 				                     const std::vector<double> &current_joint_velocities,
@@ -92,18 +153,6 @@ bool Propagator::propagate_nonlinear(const std::vector<double> &current_joint_va
 	//std::vector<double> integration_result;
 	std::vector<double> inte_times({0.0, duration, simulation_step_size});	
 	integrator_->do_integration(state, control, control_error_vec, inte_times, result);
-	
-	
-	/**std::vector<double> newJointValues;
-	std::vector<double> newJointVelocities;
-	
-	for (size_t i = 0; i < integration_result.size() / 2; i++) {
-		newJointValues.push_back(integration_result[i]);		
-	}
-	
-	for (size_t i = integration_result.size() / 2; i < integration_result.size(); i++) {
-		newJointVelocities.push_back(integration_result[i]);		
-	}*/
 	
 	//Enforce position and velocity limits
 	unsigned int ir_size = result.size() / 2;
@@ -131,24 +180,6 @@ bool Propagator::propagate_nonlinear(const std::vector<double> &current_joint_va
 			}		        
 		}
 	}
-	
-	// Normalize joint angles to be within [-pi, pi]
-	/**for (size_t i = 0; i < newJointValues.size(); i++) {
-		if (newJointValues[i] > M_PI) {
-			newJointValues[i] = newJointValues[i] - 2.0 * M_PI;
-		}
-		else if (newJointValues[i] < -M_PI) {
-			newJointValues[i] = newJointValues[i] + 2.0 * M_PI;
-		}
-	}*/	
-	
-	/**for (size_t i = 0; i < newJointValues.size(); i++) {
-		result.push_back(newJointValues[i]);
-	}
-	
-	for (size_t i = 0; i < newJointVelocities.size(); i++) {
-		result.push_back(newJointVelocities[i]);
-	}*/
 	
 	return legal;
 }

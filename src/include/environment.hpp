@@ -113,8 +113,8 @@ class Environment {
 	    
 	    bool robotCollidesDiscrete(std::vector<double> &dof_values);
 	    
-	    bool robotCollidesContinuous(std::vector<double> &dof_values_start,
-	    		                     std::vector<double> &dof_values_goal);
+	    CollisionReport robotCollidesContinuous(std::vector<double> &dof_values_start,
+	    		                                std::vector<double> &dof_values_goal);
 	
     private:
 	    /**

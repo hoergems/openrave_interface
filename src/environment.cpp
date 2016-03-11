@@ -503,8 +503,8 @@ bool Environment::robotCollidesDiscrete(std::vector<double> &dof_values) {
 	return collision_manager_->inCollisionDiscreteEnvironment(collision_objects);
 }
 
-bool Environment::robotCollidesContinuous(std::vector<double> &dof_values_start,
-		                                  std::vector<double> &dof_values_goal) {
+CollisionReport Environment::robotCollidesContinuous(std::vector<double> &dof_values_start,
+		                                             std::vector<double> &dof_values_goal) {
 	rave_robot_clone_->SetDOFValues(dof_values_start);
 	std::vector<OpenRAVE::KinBody::LinkPtr> links = rave_robot_clone_->GetLinks();
 	std::vector<OpenRAVE::AABB> aabbs;
@@ -555,9 +555,11 @@ bool Environment::robotCollidesContinuous(std::vector<double> &dof_values_start,
 		std::shared_ptr<fcl::CollisionObject> coll_obj = 
 				std::make_shared<fcl::CollisionObject>(boost::shared_ptr<fcl::CollisionGeometry>(box), box_tf);
 		collision_objects_goal.push_back(coll_obj);	
-	}	
-	return collision_manager_->inCollisionContinuousEnvironment(collision_objects_start,
-			                                                    collision_objects_goal);
+	}
+	CollisionReport collision_report = collision_manager_->inCollisionContinuousEnvironment(collision_objects_start,
+                                                                                            collision_objects_goal);	
+	collision_report.contact_body_name = links[collision_report.contact_body_index]->GetName();
+	return collision_report;
 	
 }
 
@@ -612,7 +614,8 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 							.def("getJointDamping", &Robot::getJointDamping)
 	                        .def("getJointOrigin", &Robot::getJointOrigin)
 	                        .def("getJointAxis", &Robot::getJointAxis)
-	                        .def("propagate", &Robot::propagate)	                        
+	                        .def("propagate", &Robot::propagate)
+	                        .def("propagate_constraints", &Robot::propagate_constraints)
 	                        .def("createRobotCollisionObjects", &Robot::createRobotCollisionObjectsPy)
 							.def("createEndEffectorCollisionObject", &Robot::createEndEffectorCollisionObjectPy)
 	                        .def("getEndEffectorPosition", &Robot::getEndEffectorPosition)
@@ -638,6 +641,13 @@ BOOST_PYTHON_MODULE(libopenrave_interface) {
 				.def("inCollisionContinuousEnvironment", &CollisionManager::inCollisionContinuousEnvironmentPy)
 				.def("inCollisionDiscreteOctree", &CollisionManager::inCollisionDiscreteOctreePy)
 				.def("inCollisionContinuousOctree", &CollisionManager::inCollisionContinuousOctreePy)
+	;
+	
+	class_<CollisionReport>("CollisionReport", init<>())
+		.def_readwrite("in_collision", &CollisionReport::in_collision)
+	    .def_readwrite("time_of_contact", &CollisionReport::time_of_contact)
+	    .def_readwrite("contact_body_index", &CollisionReport::contact_body_index)
+	    .def_readwrite("contact_body_name", &CollisionReport::contact_body_name)
 	;
 	
 	

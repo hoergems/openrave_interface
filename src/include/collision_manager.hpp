@@ -23,6 +23,18 @@ namespace shared {
         bool done;
     };
     
+    struct CollisionReport {
+        CollisionReport() {}        	
+        bool in_collision = false;
+        
+        double time_of_contact = 0.0;
+        
+        unsigned int contact_body_index = 0;
+        
+        std::string contact_body_name = "";
+        	
+    };
+    
     bool defaultCollisionFunction(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* cdata_);
 
     
@@ -55,13 +67,13 @@ namespace shared {
 		/**
 		 * Check if a robot in motion collides with the environment
 		 */
-		bool inCollisionContinuousEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
-						                      std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal);
+		CollisionReport inCollisionContinuousEnvironment(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+						                                         std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal);
 		
 		/**
 		 * Check if the robot continuously collides with the octree
 		 */
-		bool inCollisionContinuousOctree(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+		CollisionReport inCollisionContinuousOctree(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
 								         std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_goal);
 		
 		/**
@@ -93,9 +105,9 @@ namespace shared {
 		bool inCollisionDiscrete_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects,
 				                  boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
 		
-		bool inCollisionContinuous_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
-						            std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_object_goal,
-						            boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
+		CollisionReport inCollisionContinuous_(std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_objects_start, 
+						                       std::vector<std::shared_ptr<fcl::CollisionObject>> &robot_collision_object_goal,
+						                       boost::shared_ptr<fcl::CollisionObject> &eval_collision_object);
 		
 		boost::shared_ptr<fcl::BVHModel<fcl::OBBRSS>> env_bvh_model_;
 		

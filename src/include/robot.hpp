@@ -117,6 +117,16 @@ struct Joint {
 		                   double duration,
 		                   std::vector<double> &result);
     	    
+    	    bool propagate_constraints(std::vector<double> &current_state,
+	                                   std::vector<double> &control_input,
+	                                   std::vector<double> &control_error,
+	                                   double simulation_step_size,
+	                                   double duration,
+	                                   std::string body_name,
+	                                   std::vector<double> &body_point,
+	                                   std::vector<double> &world_normal,
+	                                   std::vector<double> &result);
+    	    
     	    bool propagate_linear(std::vector<double> &current_state,
     	    		              std::vector<double> &control_input,
     	    		              std::vector<double> &control_error,

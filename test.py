@@ -29,17 +29,18 @@ def propagate(env, sensor_name):
     current_state = v_double()
     control_input = v_double()
     control_error = v_double()
-    simulation_step_size = 0.001
-    duration = 0.03
+    simulation_step_size = 0.0001
+    duration = 0.003
     result = v_double()
     
     robot_dof_values = v_double()
+    robot_dof_values_start = v_double()
     env.getRobotDOFValues(robot_dof_values)
     print "len robot_dof_values " + str(len(robot_dof_values))
     
     #cs = [0.0 for i in xrange(len(robot_dof_values) * 2)]
     cv = [0.0 for i in xrange(len(robot_dof_values))]
-    cv[0] = 0.3
+    '''cv[0] = 0.3
     cv[1] = -0.3
     cv[4] = -0.3
     cv[5] = 0.3
@@ -54,7 +55,7 @@ def propagate(env, sensor_name):
     cv[14] = -1.5
     cv[15] = 1.5
     cv[16] = -1.5
-    cv[17] = 1.5
+    cv[17] = 1.5'''
     cs = [cv[i] for i in xrange(len(cv))]
     cs.extend([0.0 for i in xrange(len(robot_dof_values))]) 
     #cv[2] = 0.0
@@ -62,41 +63,53 @@ def propagate(env, sensor_name):
     control_input[:] = [0.0 for i in xrange(len(robot_dof_values))]
     control_error[:] = [0.0 for i in xrange(len(robot_dof_values))]   
     robot = env.getRobot()    
-   
+    #control_input[1] = 1.0
     robot_dof_values[:] = cv
+    robot_dof_values_start[:] = cv
     env.setRobotDOFValues(robot_dof_values)
-    raw_input("Press Enter to continue...")
-    env.getSensorManager().activateSensor(sensor_name, False)
-    raw_input("Press Enter to continue...")
-    #raw_input("Press Enter to continue...")
-    env.drawBoxes()    
-    env.getSensorManager().deactivateSensor(sensor_name)
-    
-    time.sleep(100)
-   
     while True:
         #print "propagating"
+        robot_dof_values_start[:] = [current_state[i] for i in xrange(len(current_state) / 2)]
         robot.propagate(current_state,
                         control_input,
                         control_error,
                         simulation_step_size,
                         duration,
-                        result)
-        result_vec = [result[i] for i in xrange(len(result))]
-        print "result " + str(result_vec)
+                        result)           
         robot_dof_values[:] = [result[i] for i in xrange(len(result) / 2)]
         
         t0 = time.time()
-        collides = env.robotCollidesDiscrete(robot_dof_values)
+        collides = env.robotCollidesContinuous(robot_dof_values_start,robot_dof_values)
         t1 = time.time() - t0
-        print "collision check time: " + str(t1)        
-        #print "collides: " + str(collides)
-        env.setRobotDOFValues(robot_dof_values)
+        if collides.in_collision:            
+            if collides.contact_body_name == "front_left_end_effector" or collides.contact_body_name == "front_left_tibia":
+                #control_input[1] = -50.0                   
+                body_point = v_double()
+                body_name = "front_left_end_effector"
+                world_normal = v_double()
+                
+                body_point[:] = [0.0, 0.0, 0.0]
+                world_normal[:] = [0.0, 0.0, 1.0]
+                
+                robot.propagate_constraints(current_state,
+                                            control_input,
+                                            control_error,
+                                            simulation_step_size,
+                                            duration,
+                                            body_name,
+                                            body_point,
+                                            world_normal,
+                                            result)
+                print [result[i] for i in xrange(len(result))]
+                print "prop"
+        current_state[:] = [result[i] for i in xrange(len(result))]        
+        robot_dof_values[:] = [result[i] for i in xrange(len(result) / 2)]
+            
+        env.setRobotDOFValues(robot_dof_values)     
         
-        current_state[:] = [result[i] for i in xrange(len(result))]
         #print "result_vec " + str(result_vec)
         #print "propagated"
-        time.sleep(0.03)
+        time.sleep(0.05)
                 
 
 def prog(joint_angles, sensor_name):
@@ -129,7 +142,7 @@ sensors[:] = [sensor_file]
 env.loadSensors(sensors)
 env.showViewer()
 env.getSensorManager()
-env.loadRobotFromURDF("model/hexapod.urdf")
+env.loadRobotFromURDF("model/block_model.urdf")
 
 #dof_values = v_double()
 #dof_values[:] = [1.5778636567,-3.28698057487e-06,4.93129297073e-06,-0.028272851672]
@@ -137,7 +150,7 @@ env.loadRobotFromURDF("model/hexapod.urdf")
 #time.sleep(100)
 
 env.getRobot().setGravityConstant(9.81)
-env.transformSensorToSensorLink(sensor_name)
+#env.transformSensorToSensorLink(sensor_name)
 env.initOctree(0.1)
 robot_dof_values = v_double()
 env.getRobotDOFValues(robot_dof_values)

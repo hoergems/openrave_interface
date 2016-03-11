@@ -743,6 +743,34 @@ bool Robot::propagate(std::vector<double> &current_state,
 			                                result);
 }
 
+bool Robot::propagate_constraints(std::vector<double> &current_state,
+	                              std::vector<double> &control_input,
+	                              std::vector<double> &control_error,
+	                              double simulation_step_size,
+	                              double duration,
+	                              std::string body_name,
+	                              std::vector<double> &body_point,
+	                              std::vector<double> &world_normal,
+	                              std::vector<double> &result) {
+	std::vector<double> current_joint_values;
+	std::vector<double> current_joint_velocities;
+	for (size_t i = 0; i < current_state.size() / 2; i++) {
+		current_joint_values.push_back(current_state[i]);
+		current_joint_velocities.push_back(current_state[i + current_state.size() / 2]);
+	}
+	
+	return propagator_->propagate_nonlinear_constraints(current_joint_values,
+				                                        current_joint_velocities,
+				                                        control_input,
+				                                        control_error,
+				                                        simulation_step_size,
+				                                        duration,
+				                                        body_name,
+				                                        body_point,
+				                                        world_normal,
+				                                        result);
+}
+
 void Robot::setState(std::vector<double> &joint_values, std::vector<double> &joint_velocities) {
 	robot_state_.joint_values = joint_values;
 	robot_state_.joint_velocities = joint_velocities;

@@ -65,6 +65,15 @@ namespace shared {
     			            std::vector<double> &int_times,
     			            std::vector<double> &result) const;
     	
+    	void do_integration_constraints(std::vector<double> &x,
+    	    			                std::vector<double> &control,
+    	    			                std::vector<double> &control_error,
+    	    			                std::vector<double> &int_times,
+    	    			                std::string &body_name,
+    	    			                std::vector<double> &body_point,
+    	    			                std::vector<double> &world_normal,
+    	    			                std::vector<double> &result) const;
+    	
     	void getProcessMatrices(std::vector<double> &x, 
     			                std::vector<double> &rho, 
     			                double t_e,
@@ -79,6 +88,8 @@ namespace shared {
     										      double t_e) const;
     	
     	void ode(const state_type &x , state_type &dxdt , double t) const;
+    	
+    	void ode_contact(const state_type &x, state_type &dxdt, double t) const;
     	
     	std::vector<double> getResult();
     	
@@ -166,6 +177,20 @@ MatrixXd getA0(const state_type &x, const state_type &rho, const state_type &zet
     	mutable VectorXd rho_vec_;
     	
     	mutable VectorXd vel_;
+    	
+    	mutable std::vector<double> body_point_;
+    	
+    	mutable std::vector<double> world_normal_;
+    	
+    	mutable std::string body_name_;
+    	
+    	mutable std::vector<double> last_dxdt;
+    	
+    	mutable double last_t;
+    	
+    	mutable std::vector<double> qdot_init;
+    	
+    	mutable double step_size_;
     	
     	std::shared_ptr<shared::RBDLInterface> rbdl_interface_;
     };

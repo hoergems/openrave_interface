@@ -28,7 +28,7 @@
   <joint name="joint00" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 2"/>
     <axis xyz="0 0 0"/>
     <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>    
     <!--dynamics damping="3.0"/-->
@@ -133,6 +133,39 @@
     <dynamics damping="2.0" friction="1.0"/>
   </joint>
   
+  <link name="front_left_end_effector">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.06" iyz="0" izz="0.03"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.0001 0.15 0.15"/>
+      </geometry>
+      <material name="red">
+        <color rgba=".9 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.0001 0.15 0.15"/>
+      </geometry>
+      <material name="Grey"/>
+    </collision>    
+  </link>
+  
+  <joint name="joint04" type="fixed">
+    <parent link="front_left_tibia"/>
+    <child link="front_left_end_effector"/>
+    <origin rpy="0 0 0" xyz="1 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="150" lower="-300000" upper="3000000" velocity="150000000"/>    
+    <dynamics damping="2.0" friction="1.0"/>
+  </joint>
+  
   <link name="front_right_coxa">
     <inertial>
       <origin rpy="0 0 0" xyz="0.5 0 0"/>
@@ -157,7 +190,7 @@
     </collision>    
   </link>
 
-  <joint name="joint04" type="revolute">
+  <joint name="joint05" type="revolute">
     <parent link="base_link"/>
     <child link="front_right_coxa"/>
     <origin rpy="0 0 1.57079632679489661923" xyz="0 0.5 0"/>
