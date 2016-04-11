@@ -119,8 +119,7 @@ std::shared_ptr<shared::CollisionManager> Environment::getCollisionManager() {
 	return collision_manager_;
 }
 
-void Environment::transformSensorToSensorLink(std::string sensor_name) {
-	//Eigen::MatrixXd end_effector_transform = robot_->getEndEffectorTransform(joint_angles);
+void Environment::transformSensorToSensorLink(std::string sensor_name) {	
 	sensor_manager_->transformSensor(robot_name_, sensor_name);
 }
 

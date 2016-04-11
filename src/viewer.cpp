@@ -14,7 +14,6 @@ RaveViewer::RaveViewer():
 	rot_({1.0, 0.0, 0.0, 0.0}),
 	trans_({0.0, 0.0, 0.0}),
 	focal_distance_(0.0){
-
 	
 }
 

@@ -347,13 +347,9 @@ Robot::Robot(std::string robot_file):
 	robot_state_(),
 	enforce_constraints_(false),
 	propagator_(new Propagator()),
-	kinematics_(new Kinematics()),
-	viewer_(nullptr),
+	kinematics_(new Kinematics()),	
 	rbdl_interface_(new RBDLInterface()){
-	
-#ifdef USE_URDF
-	viewer_ = std::make_shared<shared::ViewerInterface>();
-#endif
+
 	TiXmlDocument xml_doc;
 	xml_doc.LoadFile(robot_file);	
 	TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
@@ -584,53 +580,6 @@ MatrixXd Robot::getEndEffectorTransform(const std::vector<double> &joint_angles)
 /****************************************
  * Viewer functions
  */
-#ifdef USE_URDF
-void Robot::setupViewer(std::string model_file, std::string environment_file) {	
-	viewer_->setupViewer(model_file, environment_file);	
-}
-
-void Robot::setParticlePlotLimit(unsigned int particle_plot_limit) {
-	viewer_->setParticlePlotLimit(particle_plot_limit);
-}
-
-void Robot::updateViewerValues(const std::vector<double> &current_joint_values,
-                               const std::vector<double> &current_joint_velocities,
-							   const std::vector<std::vector<double>> &particle_joint_values,
-							   const std::vector<std::vector<double>> &particle_colors) {		
-	assert(particle_joint_values.size() == particle_colors.size() &&  
-		   "Number of particles must be the same as number of colours!");
-	// particle_color = {r, g, b, a}
-	viewer_->updateRobotValues(current_joint_values, 
-			                   current_joint_velocities,							  
-							   particle_joint_values,
-							   particle_colors,
-							   nullptr);
-}
-
-void Robot::setViewerSize(int x, int y) {
-	viewer_->setViewerSize(x, y);
-}
-
-void Robot::setViewerBackgroundColor(double r, double g, double b) {
-	viewer_->setBackgroundColor(r, g, b);
-}
-
-void Robot::setViewerCameraTransform(std::vector<double> &rot, std::vector<double> &trans) {
-	viewer_->setCameraTransform(rot, trans);
-}
-
-void Robot::addSensor(std::string sensor_file) {
-	viewer_->addSensor(sensor_file);
-}
-
-void Robot::setSensorTransform(std::vector<double> &joint_angles) {
-	bool b = true;
-	Eigen::MatrixXd end_effector_pose = kinematics_->getEndEffectorPose(joint_angles, b);
-	viewer_->setSensorTransform(end_effector_pose);
-}
-
-#endif
-
 bool Robot::propagate_linear(std::vector<double> &current_state,
     	    		         std::vector<double> &control_input,
     	    		         std::vector<double> &control_error,
@@ -962,77 +911,5 @@ std::vector<double> Robot::getProcessMatrices(std::vector<double> &x,
 				                              double t_e) {
 	return propagator_->getIntegrator()->getProcessMatricesVec(x, rho, t_e);
 }
-
-/**BOOST_PYTHON_MODULE(libopenrave_interface) {
-    using namespace boost::python;
-    
-    class_<std::vector<double> > ("v_double")
-             .def(vector_indexing_suite<std::vector<double> >());
-    
-    class_<std::vector<int> > ("v_int")
-             .def(vector_indexing_suite<std::vector<int> >());
-    
-    class_<std::vector<std::vector<double> > > ("v2_double")
-             .def(vector_indexing_suite<std::vector<std::vector<double> > >());
-    
-    class_<std::vector<std::vector<int> > > ("v2_int")
-             .def(vector_indexing_suite<std::vector<std::vector<int> > >());
-    
-    class_<fcl::OBB>("OBB");
-    class_<fcl::CollisionObject>("CollisionObject", init<const boost::shared_ptr<fcl::CollisionGeometry>, const fcl::Transform3f>());
-    to_python_converter<std::vector<fcl::OBB, std::allocator<fcl::OBB> >, VecToList<fcl::OBB> >();
-    to_python_converter<std::vector<fcl::CollisionObject, std::allocator<fcl::CollisionObject> >, VecToList<fcl::CollisionObject> >();
-    to_python_converter<std::vector<std::shared_ptr<fcl::CollisionObject>, std::allocator<std::shared_ptr<fcl::CollisionObject>> >, 
-	                    VecToList<std::shared_ptr<fcl::CollisionObject>> >();
-    
-    register_ptr_to_python<std::shared_ptr<fcl::CollisionObject>>();
-    
-    class_<Robot, boost::shared_ptr<Robot>>("Robot", init<std::string>())
-                        .def("getLinkNames", &Robot::getLinkNames)
-                        .def("getLinkDimension", &Robot::getLinkDimension)
-                        .def("getActiveLinkDimensions", &Robot::getActiveLinkDimensions)
-                        .def("getLinkMasses", &Robot::getLinkMasses)
-                        .def("getLinkPose", &Robot::getLinkPose)
-                        .def("getLinkInertialPose", &Robot::getLinkInertialPose)
-                        .def("getLinkInertias", &Robot::getLinkInertias)
-                        .def("getJointNames", &Robot::getJointNames)
-                        .def("getActiveJoints", &Robot::getActiveJoints)
-                        .def("getJointType", &Robot::getJointType)
-						.def("getJointDamping", &Robot::getJointDamping)
-                        .def("getJointOrigin", &Robot::getJointOrigin)
-                        .def("getJointAxis", &Robot::getJointAxis)
-                        .def("propagate", &Robot::propagate)
-                        //.def("createRobotCollisionStructures", &Robot::createRobotCollisionStructuresPy)
-                        .def("createRobotCollisionObjects", &Robot::createRobotCollisionObjectsPy)
-						.def("createEndEffectorCollisionObject", &Robot::createEndEffectorCollisionObjectPy)
-                        .def("getEndEffectorPosition", &Robot::getEndEffectorPosition)						
-                        .def("test", &Robot::test)
-                        .def("getDOF", &Robot::getDOF)
-						.def("getJointLowerPositionLimits", &Robot::getJointLowerPositionLimits)
-						.def("getJointUpperPositionLimits", &Robot::getJointUpperPositionLimits)
-						.def("getJointVelocityLimits", &Robot::getJointVelocityLimits)
-						.def("getJointTorqueLimits", &Robot::getJointTorqueLimits)
-						.def("enforceConstraints", &Robot::enforceConstraints)
-						.def("constraintsEnforced", &Robot::constraintsEnforced)
-						.def("setGravityConstant", &Robot::setGravityConstant)
-						.def("setExternalForce", &Robot::setExternalForce)
-						.def("setAccelerationLimit", &Robot::setAccelerationLimit)
-						.def("getEndEffectorVelocity", &Robot::getEndEffectorVelocity)
-						.def("getProcessMatrices", &Robot::getProcessMatrices)						
-						.def("getEndEffectorJacobian", &Robot::getEndEffectorJacobian)
-#ifdef USE_URDF
-						.def("setupViewer", &Robot::setupViewer)
-						.def("updateViewerValues", &Robot::updateViewerValues)
-						.def("setViewerSize", &Robot::setViewerSize)
-						.def("setViewerBackgroundColor", &Robot::setViewerBackgroundColor)
-					    .def("setViewerCameraTransform", &Robot::setViewerCameraTransform)
-					    .def("addPermanentViewerParticles", &Robot::addPermanentViewerParticles)
-					    .def("removePermanentViewerParticles", &Robot::removePermanentViewerParticles)
-					    .def("addSensor", &Robot::addSensor)
-						.def("setSensorTransform", &Robot::setSensorTransform)
-#endif
-                        //.def("setup", &Integrate::setup)                        
-    ;
-}*/
 
 }

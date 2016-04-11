@@ -16,10 +16,6 @@
 #include "propagator.hpp"
 #include "Kinematics.hpp"
 
-#ifdef USE_URDF
-   #include <viewer_interface/viewer_interface.hpp>
-#endif
-
 using std::cout;
 using std::endl;
 
@@ -198,39 +194,7 @@ struct Joint {
 				                                   double t_e);
     	    
     	    MatrixXd getEndEffectorTransform(const std::vector<double> &joint_angles);
-#ifdef USE_URDF	    
-    	    /**
-    	     * Set the size of the attached viewer
-    	     */
-    	    void setViewerSize(int x, int y);
-    	    
-    	    /**
-    	     * Set the background color of the viewer
-    	     */
-    	    void setViewerBackgroundColor(double r, double g, double b);
-    	    
-    	    /**
-    	     * Set the viewer camera transformation
-    	     */
-    	    void setViewerCameraTransform(std::vector<double> &rot, std::vector<double> &trans);
-    	    
-    	    /**
-    	     * Set the maximum number of particles to plot
-    	     */
-    	    void setParticlePlotLimit(unsigned int particle_plot_limit);
-    	    
-    	    void updateViewerValues(const std::vector<double> &current_joint_values,
-    	                            const std::vector<double> &current_joint_velocities,
-    	    					    const std::vector<std::vector<double>> &particle_joint_values,
-    	    					    const std::vector<std::vector<double>> &particle_colors);
-    	   
-    	        	    
-    	    void setupViewer(std::string model_file, std::string environment_file);
-    	    
-    	    void addSensor(std::string sensor_file);
-    	    
-    	    void setSensorTransform(std::vector<double> &joint_angles);
-#endif
+
         private:
     	    std::vector<shared::Link> links_;
     	    
@@ -303,12 +267,6 @@ struct Joint {
             std::shared_ptr<shared::Propagator> propagator_;
             
             std::shared_ptr<shared::Kinematics> kinematics_;
-            
-#ifdef USE_URDF
-            std::shared_ptr<shared::ViewerInterface> viewer_;
-#else
-            std::shared_ptr<double> viewer_;
-#endif
             
             void quatFromRPY(double &roll, double &pitch, double &y, std::vector<double> &quat);
     
